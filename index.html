@@ -122,6 +122,25 @@
             border-radius: calc(var(--radius-md) - 6px);
         }
 
+        #brand-logo-container {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            background: #fff;
+            padding: 12px 18px;
+            border-radius: 12px;
+            z-index: 9999;
+            box-shadow: var(--shadow-hover);
+            border: 2px solid var(--primary);
+            pointer-events: none;
+        }
+
+        #brand-logo-container img {
+            height: 40px;
+            display: block;
+            object-fit: contain;
+        }
+
         .scroll-indicator {
             position: absolute;
             bottom: 30px;
@@ -773,9 +792,20 @@
         }
 
         @media (max-width: 850px) {
+            #brand-logo-container {
+                top: 15px;
+                left: 15px;
+                padding: 8px 12px;
+                border-radius: 8px;
+            }
+
+            #brand-logo-container img {
+                height: 28px;
+            }
+
             .hero {
                 height: auto;
-                padding-top: 80px;
+                padding-top: 100px;
                 padding-bottom: 60px;
             }
 
@@ -788,7 +818,7 @@
 
             .hero-card {
                 width: 90%;
-                max-width: 400px;
+                max-width: 320px;
                 transform: rotate(0deg);
                 margin: 0 auto;
             }
@@ -841,11 +871,9 @@
 
 <body>
 
-    <!-- SÜREKLİ GÖRÜNEN LOGO -->
-    <div
-        style="position: fixed; top: 20px; left: 20px; background: #fff; padding: 10px 15px; border-radius: 12px; z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid var(--primary); pointer-events: none;">
-        <img src="LOGO.png" onerror="this.src='studyprove.png'"
-            style="height: 40px; display: block; object-fit: contain;" alt="Logo" />
+    <!-- SADECE EN ÜSTTE GÖRÜNEN LOGO -->
+    <div id="brand-logo-container">
+        <img src="LOGO.png" onerror="this.src='studyprove.png'" alt="Logo" />
     </div>
 
     <header class="hero">
