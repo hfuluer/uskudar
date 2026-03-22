@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
     <title>Üsküdar Keşif Yolculuğu</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap"
@@ -841,6 +841,13 @@
 
 <body>
 
+    <!-- SÜREKLİ GÖRÜNEN LOGO -->
+    <div
+        style="position: fixed; top: 20px; left: 20px; background: #fff; padding: 10px 15px; border-radius: 12px; z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid var(--primary); pointer-events: none;">
+        <img src="LOGO.png" onerror="this.src='studyprove.png'"
+            style="height: 40px; display: block; object-fit: contain;" alt="Logo" />
+    </div>
+
     <header class="hero">
         <div class="hero-bg"></div>
         <div class="hero-content">
@@ -852,7 +859,8 @@
                 <img src="üsküdar foto.png" onerror="this.src='1.png'" alt="Üsküdar Görseli" />
             </div>
         </div>
-        <div class="scroll-indicator">
+        <div class="scroll-indicator" style="cursor: pointer;"
+            onclick="document.querySelector('.journey-wrapper').scrollIntoView({behavior:'smooth', block:'start'});">
             <span>Yolculuğa Başla</span>
             <svg viewBox="0 0 24 24">
                 <path d="M6 9l6 6 6-6" />
