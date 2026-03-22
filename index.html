@@ -1,0 +1,2192 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Üsküdar Keşif Yolculuğu</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #FDFBF6;
+            --card-bg: #FFFFFF;
+            --primary: #F27A18;
+            --primary-hover: #D96912;
+            --secondary: #8B5E3C;
+            --text-dark: #37281F;
+            --text-light: #665A54;
+            --passive-btn: #EAEAEA;
+            --passive-text: #969696;
+            --success: #4CAF50;
+            --error: #F44336;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --shadow-soft: 0 12px 30px rgba(139, 94, 60, 0.08);
+            --shadow-hover: 0 20px 40px rgba(242, 122, 24, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .hero {
+            position: relative;
+            width: 100%;
+            height: clamp(400px, 50vh, 600px);
+            background-color: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-bottom: 4px solid var(--primary);
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background: url('map.png') center/cover no-repeat;
+            opacity: 0.25;
+            mix-blend-mode: multiply;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, rgba(20, 10, 5, 0.7) 0%, rgba(20, 10, 5, 0.2) 100%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 1200px;
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hero-text {
+            flex: 1;
+            color: #FFF;
+        }
+
+        .hero-text h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            margin-bottom: 16px;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            letter-spacing: 0.02em;
+        }
+
+        .hero-text p {
+            font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+            font-weight: 300;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+            opacity: 0.9;
+        }
+
+        .hero-card {
+            flex-shrink: 0;
+            width: 420px;
+            background: var(--card-bg);
+            padding: 8px;
+            border-radius: var(--radius-md);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            transform: rotate(4deg);
+            transition: transform 0.4s ease;
+        }
+
+        .hero-card:hover {
+            transform: rotate(0deg) scale(1.02);
+        }
+
+        .hero-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: calc(var(--radius-md) - 6px);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #FFF;
+            animation: bounce 2s infinite;
+        }
+
+        .scroll-indicator span {
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .scroll-indicator svg {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            stroke: #FFF;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0) translateX(-50%);
+            }
+
+            40% {
+                transform: translateY(-12px) translateX(-50%);
+            }
+
+            60% {
+                transform: translateY(-6px) translateX(-50%);
+            }
+        }
+
+        .journey-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 0;
+        }
+
+        #path-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            filter: drop-shadow(0 4px 6px rgba(242, 122, 24, 0.2));
+        }
+
+        #path-line {
+            fill: none;
+            stroke: var(--primary);
+            stroke-width: 16px;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .timeline-container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 120px;
+            padding: 40px 0;
+        }
+
+        .timeline-node {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 100px;
+            align-items: center;
+            position: relative;
+            width: 100%;
+            padding: 0 40px;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.7s ease-out, transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .timeline-node.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .timeline-node.odd .checkpoint-wrapper,
+        .timeline-node.even .checkpoint-wrapper {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .timeline-node.odd .card {
+            grid-column: 1;
+            grid-row: 1;
+            justify-self: end;
+            margin: 0 !important;
+        }
+
+        .timeline-node.even .card {
+            grid-column: 2;
+            grid-row: 1;
+            justify-self: start;
+            margin: 0 !important;
+        }
+
+        .checkpoint-wrapper {
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .checkpoint-dot {
+            width: 48px;
+            height: 48px;
+            background: #FFF;
+            border: 8px solid #FCD1A9;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .checkpoint-dot::after {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: transparent;
+            border-radius: 50%;
+            transition: background 0.5s ease;
+        }
+
+        .timeline-node.visible .checkpoint-dot {
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .timeline-node.visible .checkpoint-dot::after {
+            background: var(--primary);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 420px;
+            padding: 24px;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            z-index: 5;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-img-wrapper {
+            width: 100%;
+            height: 220px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: #f0f0f0;
+        }
+
+        .card-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .card:hover .card-img-wrapper img {
+            transform: scale(1.05);
+        }
+
+        .card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            color: var(--secondary);
+            margin-top: 4px;
+            line-height: 1.2;
+        }
+
+        .card p {
+            font-size: 1.05rem;
+            color: var(--text-light);
+            line-height: 1.5;
+        }
+
+        .card-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .btn-active {
+            background: var(--primary);
+            color: #FFF;
+            box-shadow: 0 4px 12px rgba(242, 122, 24, 0.25);
+        }
+
+        .btn-active:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(242, 122, 24, 0.4);
+        }
+
+        .btn-passive {
+            background: var(--passive-btn);
+            color: var(--passive-text);
+        }
+
+        .btn-passive:hover {
+            background: #e0e0e0;
+        }
+
+        .mission-panel-wrapper {
+            display: none;
+            width: 100%;
+            max-width: 600px;
+            animation: slideFadeIn 0.5s ease;
+            z-index: 5;
+        }
+
+        .timeline-node.odd .mission-panel-wrapper {
+            grid-column: 2;
+            grid-row: 1;
+            justify-self: start;
+            margin: 0 !important;
+        }
+
+        .timeline-node.even .mission-panel-wrapper {
+            grid-column: 1;
+            grid-row: 1;
+            justify-self: end;
+            margin: 0 !important;
+        }
+
+        .timeline-node.mission-active .mission-panel-wrapper {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes slideFadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .mission-box {
+            background: #FFF;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-hover);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            border: 3px solid rgba(242, 122, 24, 0.15);
+        }
+
+        .m-view {
+            width: 100%;
+        }
+
+        .mission-header {
+            background: linear-gradient(135deg, rgba(242, 122, 24, 0.1), rgba(242, 122, 24, 0.05));
+            padding: 24px;
+            border-bottom: 1px solid rgba(242, 122, 24, 0.1);
+        }
+
+        .mission-header h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            color: var(--secondary);
+            margin-bottom: 8px;
+        }
+
+        .mission-header p {
+            font-size: 0.95rem;
+            color: var(--text-light);
+        }
+
+        .mini-route-progress {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin: 24px 24px 10px;
+            padding: 0 10px;
+        }
+
+        .route-line {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            right: 10px;
+            height: 6px;
+            background: #EAEAEA;
+            z-index: 1;
+            transform: translateY(-50%);
+            border-radius: 4px;
+        }
+
+        .route-dot {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #FFF;
+            border: 4px solid #EAEAEA;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        .route-dot.active {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 12px rgba(242, 122, 24, 0.3);
+        }
+
+        .route-dot.completed {
+            background: var(--success);
+            border-color: var(--success);
+            color: #FFF;
+        }
+
+        .modules-grid {
+            padding: 20px 24px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .mod-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border: 2px solid var(--passive-btn);
+            border-radius: var(--radius-md);
+            transition: all 0.3s;
+        }
+
+        .mod-card.active {
+            border-color: var(--primary);
+            background: rgba(242, 122, 24, 0.03);
+        }
+
+        .mod-card.completed {
+            border-color: var(--success);
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        .mod-card.locked {
+            opacity: 0.6;
+        }
+
+        .mod-info {
+            flex: 1;
+            margin-right: 15px;
+        }
+
+        .mod-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mod-info p {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .mod-status {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .active .mod-status {
+            color: var(--primary);
+            background: rgba(242, 122, 24, 0.1);
+        }
+
+        .completed .mod-status {
+            color: var(--success);
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .locked .mod-status {
+            color: var(--text-light);
+            background: var(--passive-btn);
+        }
+
+        .game-view {
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .game-top {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-light);
+            align-items: center;
+        }
+
+        .game-lives {
+            display: flex;
+            gap: 5px;
+            font-size: 1.3rem;
+        }
+
+        .game-stats-counters {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            background: #FFF;
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 2px dashed #EAEAEA;
+        }
+
+        .stat-correct {
+            color: var(--success);
+        }
+
+        .stat-wrong {
+            color: var(--error);
+        }
+
+        .question-text {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            letter-spacing: 2px;
+            padding: 25px;
+            min-width: 250px;
+            background: #FDFBF6;
+            border-radius: 20px;
+            border: 3px dashed var(--passive-btn);
+            margin-bottom: 25px;
+        }
+
+        .game-input {
+            font-size: 2rem;
+            padding: 15px;
+            width: 100%;
+            max-width: 250px;
+            text-align: center;
+            border: 3px solid var(--primary);
+            border-radius: 16px;
+            outline: none;
+            transition: border 0.3s;
+            margin-bottom: 25px;
+            color: var(--text-dark);
+            font-weight: 700;
+        }
+
+        .game-input:focus {
+            border-color: var(--primary-hover);
+            box-shadow: 0 0 15px rgba(242, 122, 24, 0.3);
+        }
+
+        @keyframes errorShake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-15px);
+            }
+
+            75% {
+                transform: translateX(15px);
+            }
+        }
+
+        .error-shake {
+            animation: errorShake 0.4s ease;
+            border-color: var(--error) !important;
+            color: var(--error);
+        }
+
+        .result-view {
+            padding: 40px 30px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .result-view h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--success);
+            margin-bottom: 20px;
+        }
+
+        .result-view p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .mod-popup-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(30, 20, 15, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .mod-popup-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            width: min(90%, 500px);
+            padding: 40px 32px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+            transform: translateY(50px) scale(0.95);
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+            position: relative;
+        }
+
+        .mod-popup-overlay.show .popup-card {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+
+        .popup-card span.badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .popup-card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+        }
+
+        .popup-card p {
+            font-size: 1.15rem;
+            color: var(--text-light);
+            line-height: 1.7;
+            margin-bottom: 30px;
+        }
+
+        .btn-close {
+            width: 100%;
+            background: #FFF;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-close:hover {
+            background: var(--primary);
+            color: #FFF;
+        }
+
+        @media (max-width: 850px) {
+            .hero {
+                height: auto;
+                padding-top: 80px;
+                padding-bottom: 60px;
+            }
+
+            .hero-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 40px;
+                padding: 0 20px;
+            }
+
+            .hero-card {
+                width: 90%;
+                max-width: 400px;
+                transform: rotate(0deg);
+                margin: 0 auto;
+            }
+
+            .timeline-container {
+                gap: 80px;
+                padding: 20px;
+            }
+
+            .timeline-node {
+                display: flex !important;
+                flex-direction: column;
+                align-items: center;
+                gap: 40px;
+                padding: 0 10px 0 20vw !important;
+            }
+
+            .timeline-node.odd .checkpoint-wrapper,
+            .timeline-node.even .checkpoint-wrapper {
+                left: 10vw;
+                top: 50px;
+            }
+
+            .timeline-node.odd .card,
+            .timeline-node.even .card {
+                width: 100%;
+                margin: 0 !important;
+                max-width: 100%;
+            }
+
+            .card-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 16px;
+                font-size: 1.05rem;
+            }
+
+            .timeline-node.odd .mission-panel-wrapper,
+            .timeline-node.even .mission-panel-wrapper {
+                width: 100%;
+                margin: 0 !important;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>Üsküdar Keşif Yolculuğu</h1>
+                <p>Her durakta yeni bir hikâye keşfet</p>
+            </div>
+            <div class="hero-card">
+                <img src="üsküdar foto.png" onerror="this.src='1.png'" alt="Üsküdar Görseli" />
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <span>Yolculuğa Başla</span>
+            <svg viewBox="0 0 24 24">
+                <path d="M6 9l6 6 6-6" />
+            </svg>
+        </div>
+    </header>
+
+    <main class="journey-wrapper">
+        <svg id="path-svg">
+            <path id="path-line" />
+        </svg>
+        <div class="timeline-container" id="timeline"></div>
+    </main>
+
+    <div id="popup-overlay" role="dialog" aria-modal="true" class="mod-popup-overlay">
+        <div class="popup-card">
+            <span class="badge" style="background: rgba(242, 122, 24, 0.1); color: var(--primary);">Keşif Notu</span>
+            <h2 id="popup-title">...</h2>
+            <p id="popup-text">...</p>
+            <button class="btn btn-close" onclick="closePopup('popup-overlay')">Harikaymış, Kapat</button>
+        </div>
+    </div>
+
+    <!-- Başarısızlık (Fail) Popupu -->
+    <div id="fail-popup-overlay" role="dialog" aria-modal="true" class="mod-popup-overlay">
+        <div class="popup-card">
+            <span class="badge" style="background: rgba(244, 67, 54, 0.1); color: var(--error);">Dikkat</span>
+            <h2 style="color: var(--error);">Bu Modülü Yeniden Deneyelim</h2>
+            <p>Biraz daha dikkatle tekrar denersen bu kuralı çok daha iyi kavrayabilirsin. Yolculuğuna devam etmek için
+                modülü yeniden tamamla.</p>
+            <button class="btn btn-active" onclick="restartCurrentModule()">Modülü Yeniden Başlat</button>
+        </div>
+    </div>
+
+    <!-- Final Kutlama Popupu -->
+    <div id="final-popup-overlay" role="dialog" aria-modal="true" class="mod-popup-overlay">
+        <div class="popup-card" id="final-popup-content" style="background:#fff;">
+            <span class="badge" style="background: rgba(76, 175, 80, 0.1); color: var(--success);">Büyük Başarı!</span>
+            <h2 id="final-popup-title" style="color: var(--text-dark); margin: 10px 0 5px;">Tebrikler! İlk Durağı
+                Tamamladın</h2>
+            <h3 id="final-popup-sub"
+                style="font-size:1.2rem; color: var(--primary); margin-bottom: 20px; font-weight:600;">Toplama Yolculuğu
+                başarıyla bitti.</h3>
+            <p id="final-popup-desc" style="margin-bottom: 25px;">Üsküdar’daki ilk keşif durağını başarıyla tamamladın.
+                Sabırla ilerledin, dikkatle çözdün ve tüm modülleri geçtin. Şimdi yeni görevler seni bekliyor.</p>
+
+            <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 25px;">
+                <div style="background: #fdfbf6; border: 2px solid #EAEAEA; border-radius: 16px; padding: 15px 30px;">
+                    <strong style="font-size: 1.8rem; color: var(--secondary);" id="final-stats-mods">6 /
+                        6</strong><br><span style="color:#666;">Modül</span>
+                </div>
+                <div style="background: #fdfbf6; border: 2px solid #EAEAEA; border-radius: 16px; padding: 15px 30px;">
+                    <strong style="font-size: 1.8rem; color: var(--secondary);"
+                        id="final-stats-qs">120</strong><br><span style="color:#666;">Soru</span>
+                </div>
+            </div>
+            <p id="final-popup-motto"
+                style="font-weight: 600; color: var(--secondary); font-style: italic; margin-bottom: 30px;">"Her doğru
+                cevap seni yeni bir keşfe taşıyor."</p>
+
+            <div class="action-buttons" data-html2canvas-ignore="true"
+                style="display:flex; flex-direction:column; gap:12px;">
+                <button class="btn btn-active" onclick="saveSnapshot()"
+                    style="background: var(--success); box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);">Bu Başarıyı
+                    Kaydet 📸</button>
+                <button class="btn btn-passive" onclick="closePopup('final-popup-overlay')">Yolculuğa Devam Et</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Çarpım Tablosu İpucu Penceresi -->
+    <div id="ct-hint-overlay"
+        style="position: fixed; bottom: 20px; right: 20px; width: 350px; min-width: 250px; min-height: 200px; max-width: calc(100vw - 40px); max-height: 60vh; z-index: 1000; background: #fff; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); display: none; flex-direction: column; border: 2px solid var(--primary); resize: both; overflow: hidden; /* Sağ alt köşeden tutup boyutlandırılabilir */">
+        <div id="ct-hint-header"
+            style="display:flex; justify-content:space-between; align-items:center; padding: 10px 15px; border-bottom: 1px solid #eee; background: var(--primary); border-radius: 9px 9px 0 0; color: #fff; cursor: grab; /* Sürükleme işareti */">
+            <h3 style="margin:0; font-size: 1.1rem; font-weight:700; pointer-events: none;">Çarpım Tablosu İpucu</h3>
+            <button
+                style="background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 0 5px;"
+                onclick="document.getElementById('ct-hint-overlay').style.display='none'">&times;</button>
+        </div>
+        <div
+            style="overflow-y:auto; overflow-x:auto; padding: 10px; background: #f8fcff; flex-grow: 1; display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+            <img id="ct-img" src="ct.png" onerror="this.src='1.png'"
+                style="max-width:100%; max-height:100%; object-fit: contain; display:block;" alt="Çarpım Tablosu" />
+        </div>
+    </div>
+
+    <!-- PENCERE SÜRÜKLEME KODU -->
+    <script>
+        const ctOverlay = document.getElementById('ct-hint-overlay');
+        const ctHeader = document.getElementById('ct-hint-header');
+        let isDragging = false;
+        let dragStartX, dragStartY;
+        let overlayStartX, overlayStartY;
+
+        ctHeader.addEventListener('mousedown', (e) => {
+            if (e.target.tagName === 'BUTTON') return;
+            isDragging = true;
+            ctHeader.style.cursor = 'grabbing';
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+
+            const rect = ctOverlay.getBoundingClientRect();
+            if (ctOverlay.style.bottom || ctOverlay.style.right) {
+                ctOverlay.style.top = rect.top + 'px';
+                ctOverlay.style.left = rect.left + 'px';
+                ctOverlay.style.bottom = 'auto';
+                ctOverlay.style.right = 'auto';
+            }
+            overlayStartX = rect.left;
+            overlayStartY = rect.top;
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const dx = e.clientX - dragStartX;
+            const dy = e.clientY - dragStartY;
+            ctOverlay.style.left = Math.max(0, Math.min(window.innerWidth - ctOverlay.offsetWidth, overlayStartX + dx)) + 'px';
+            ctOverlay.style.top = Math.max(0, Math.min(window.innerHeight - ctOverlay.offsetHeight, overlayStartY + dy)) + 'px';
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            ctHeader.style.cursor = 'grab';
+        });
+
+        ctHeader.addEventListener('touchstart', (e) => {
+            if (e.target.tagName === 'BUTTON') return;
+            isDragging = true;
+            const touch = e.touches[0];
+            dragStartX = touch.clientX;
+            dragStartY = touch.clientY;
+            const rect = ctOverlay.getBoundingClientRect();
+            if (ctOverlay.style.bottom || ctOverlay.style.right) {
+                ctOverlay.style.top = rect.top + 'px';
+                ctOverlay.style.left = rect.left + 'px';
+                ctOverlay.style.bottom = 'auto';
+                ctOverlay.style.right = 'auto';
+            }
+            overlayStartX = rect.left;
+            overlayStartY = rect.top;
+        }, { passive: false });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const touch = e.touches[0];
+            const dx = touch.clientX - dragStartX;
+            const dy = touch.clientY - dragStartY;
+            ctOverlay.style.left = Math.max(0, Math.min(window.innerWidth - ctOverlay.offsetWidth, overlayStartX + dx)) + 'px';
+            ctOverlay.style.top = Math.max(0, Math.min(window.innerHeight - ctOverlay.offsetHeight, overlayStartY + dy)) + 'px';
+            if (e.cancelable) e.preventDefault();
+        }, { passive: false });
+
+        document.addEventListener('touchend', () => { isDragging = false; });
+    </script>
+
+    <script>
+        const locations = [
+            { id: 1, title: "1. Üsküdar Meydan", short: "İstanbul’un önemli geçiş noktalarından biridir.", detail: "Tarih boyunca Asya ile Avrupa arasında önemli bir bağlantı noktası olmuştur.", src: "1.png" },
+            { id: 2, title: "2. Mihrimah Sultan Camii", short: "Osmanlı mimarisinin zarif örneklerinden biri.", detail: "Mimar Sinan tarafından yapılmış, estetik yapısıyla dikkat çeker.", src: "2.png" },
+            { id: 3, title: "3. Şemsi Paşa Camii", short: "Denizin kıyısında eşsiz bir yapı.", detail: "Küçük ama mimari açıdan çok özel bir eserdir.", src: "3.png" },
+            { id: 4, title: "4. Kız Kulesi", short: "İstanbul’un simgelerinden biri.", detail: "Farklı dönemlerde savunma ve deniz feneri olarak kullanılmıştır.", src: "4.png" },
+            { id: 5, title: "5. Kuzguncuk", short: "Renkli evleriyle ünlü mahalle.", detail: "Farklı kültürlerin bir arada yaşadığı özgün bir mahalledir.", src: "5.png" },
+            { id: 6, title: "6. Beylerbeyi Sarayı", short: "Osmanlı’nın yazlık saraylarından biri.", detail: "Devlet misafirlerinin ağırlandığı önemli bir saraydır.", src: "6.png" },
+            { id: 7, title: "7. Çinili Camii", short: "Çini sanatıyla ünlü cami.", detail: "İç süslemeleriyle Osmanlı sanatını yansıtır.", src: "7.png" },
+            { id: 8, title: "8. Valide-i Atik Camii", short: "Osmanlı külliye yapısı.", detail: "Eğitim ve sosyal yaşamın merkezi olarak kullanılmıştır.", src: "8.png" },
+            { id: 9, title: "9. Fethi Paşa Korusu", short: "Doğa ve manzaranın buluştuğu yer.", detail: "Boğaz manzarasıyla ünlü bir yeşil alandır.", src: "9.png" },
+            { id: 10, title: "10. Çamlıca Tepesi", short: "Şehrin en yüksek noktalarından biri.", detail: "İstanbul’un en geniş manzarasını sunar.", src: "10.png" },
+            { id: 11, title: "11. Kandilli Rasathanesi", short: "Bilimsel araştırma merkezi.", detail: "Deprem ve gökyüzü gözlemlerinin yapıldığı merkezdir.", src: "11.png" },
+            { id: 12, title: "12. Üsküdar Bilim Merkezi", short: "Bilim ve keşif dolu interaktif bir merkez.", detail: "Bilimsel deneyler ve interaktif etkinliklerle öğrenmeyi eğlenceli hale getiren bir merkezdir.", src: "12.png" }
+        ];
+
+        // === LOCATION TASKS ALTYAPISI ===
+        const locationTasks = {
+            1: {
+                op: 'addition',
+                title: "1. Durak Görevleri: Toplama Yolculuğu",
+                desc: "Üsküdar’daki ilk keşfinde toplama becerilerini geliştir. Her modülü tamamladıkça yolculuğun ilerlesin.",
+                modules: [
+                    { id: 1, name: "Modül 1", desc: "İki basamaklı + iki basamaklı (Eldesiz)", msg: "Harika başladın! Üsküdar Meydan’da ilk adımını güvenle attın. Yolculuğun güzel başladı." },
+                    { id: 2, name: "Modül 2", desc: "Üç basamaklı + iki veya üç basamaklı (Eldesiz)", msg: "Çok iyi gidiyorsun! Mihrimah Sultan Camii’nin zarafeti gibi işlemlerinde de denge var." },
+                    { id: 3, name: "Modül 3", desc: "Dört basamaklı + karışık basamaklı (Eldesiz)", msg: "Mükemmel! Şimdi Üsküdar sokaklarında daha özgüvenli ilerliyorsun." },
+                    { id: 4, name: "Modül 4", desc: "İki basamaklı + iki basamaklı (Eldeli)", msg: "Süper! Şemsi Paşa kıyılarında dalgalar nasıl ritimle ilerliyorsa sen de ritmini buldun." },
+                    { id: 5, name: "Modül 5", desc: "Üç basamaklı + iki veya üç basamaklı (Eldeli)", msg: "Bravo! Kuzguncuk’un renkli sokakları gibi işlemlerin de giderek güçleniyor." },
+                    { id: 6, name: "Modül 6", desc: "Dört basamaklı + karışık basamaklı (Eldeli)", msg: "İnanılmaz bir iş çıkardın! Bu durağın tüm toplama görevlerini tamamladın." }
+                ],
+                fTitle: "Tebrikler! İlk Durağı Tamamladın",
+                fSub: "Toplama Yolculuğu başarıyla bitti.",
+                fDesc: "Üsküdar’daki ilk keşif durağını başarıyla tamamladın. Sabırla ilerledin, dikkatle çözdün ve tüm modülleri geçtin. Şimdi yeni görevler seni bekliyor.",
+                fMotto: "\"Her doğru cevap seni yeni bir keşfe taşıyor.\""
+            },
+            2: {
+                op: 'subtraction',
+                title: "2. Durak Görevleri: Çıkarma Yolculuğu",
+                desc: "Mihrimah Sultan Camii durağında çıkarma becerilerini geliştir. Adım adım ilerle, işlemlerde ustalaş.",
+                modules: [
+                    { id: 1, name: "Modül 1", desc: "İki basamaklı - iki basamaklı (Onluk Bozmasız)", msg: "Çok güzel başladın! Mihrimah Sultan Camii durağında ilk çıkarma görevini başarıyla tamamladın." },
+                    { id: 2, name: "Modül 2", desc: "Üç basamaklı - iki veya üç basamaklı (Onluk Bozmasız)", msg: "Harika ilerliyorsun! İşlemlerdeki dikkatin seni bir sonraki durağa hazırlıyor." },
+                    { id: 3, name: "Modül 3", desc: "Dört basamaklı - karışık basamaklı (Onluk Bozmasız)", msg: "Mükemmel! Artık daha büyük sayılarla da rahatça çalışabiliyorsun." },
+                    { id: 4, name: "Modül 4", desc: "İki basamaklı - iki basamaklı (Onluk Bozmalı)", msg: "Süper! Onluk bozmalı işlemlerde dikkatini çok iyi kullandın." },
+                    { id: 5, name: "Modül 5", desc: "Üç basamaklı - iki veya üç basamaklı (Onluk Bozmalı)", msg: "Bravo! Her adımda daha güçlü ilerliyorsun, keşif yolculuğun giderek güzelleşiyor." },
+                    { id: 6, name: "Modül 6", desc: "Dört basamaklı - karışık basamaklı (Onluk Bozmalı)", msg: "Çıkarma yolculuğunu başarıyla tamamladın! Bu durakta çok güçlü bir performans gösterdin." }
+                ],
+                fTitle: "Tebrikler! İkinci Durağı Tamamladın",
+                fSub: "Çıkarma Yolculuğu başarıyla bitti.",
+                fDesc: "Bu durakta dikkatini, sabrını ve işlem becerini çok güzel kullandın. Şimdi yolculuğunda daha güçlü ilerliyorsun.",
+                fMotto: "\"Her tamamlanan görev seni yeni bir seviyeye taşır.\""
+            },
+            3: {
+                op: 'multiplication',
+                title: "3. Durak Görevleri: Çarpım Tablosu Yolculuğu",
+                desc: "Şemsi Paşa Camii durağında çarpım tablosu becerilerini geliştir. Sayılar büyüdükçe hızlan!",
+                modules: [
+                    { id: 1, name: "Modül 1", desc: "1'den 9'a kadar sayılarla çarpım", msg: "Harika başladın! Şemsi Paşa rüzgarında ilk çarpma görevlerini hızla aştın." },
+                    { id: 2, name: "Modül 2", desc: "1'den 9'a kadar sayılarla çarpım", msg: "Çok iyisin! Çarpım tablosunda ustalaşıyorsun." },
+                    { id: 3, name: "Modül 3", desc: "4 ile 10 arası sayılarla çarpım", msg: "Sayılar büyümeye başladı ama sen zorlanmadan ilerliyorsun. Mükemmel!" },
+                    { id: 4, name: "Modül 4", desc: "5 ile 10 arası sayılarla çarpım", msg: "Süper! Büyük sayılarda da hızından hiçbir şey kaybetmiyorsun." },
+                    { id: 5, name: "Modül 5", desc: "1'den 9'a kadar sayılarla çarpım", msg: "Çok güzel! Temel tabloyu iyice pekiştirdin, son adıma hazırsın." },
+                    { id: 6, name: "Modül 6", desc: "5 ile 10 arası sayılarla çarpım", msg: "İnanılmaz! Şemsi Paşa durağında çarpma ustası oldun!" }
+                ],
+                fTitle: "Tebrikler! Üçüncü Durağı Tamamladın",
+                fSub: "Çarpma Yolculuğu başarıyla bitti.",
+                fDesc: "Şemsi Paşa kıyılarındaki bütün çarpma zorluklarını aştın. Zihinden hesaplamakta ne kadar hızlı olduğunu gösterdin.",
+                fMotto: "\"Büyük sayılar bile iyi hesaplandığında küçülür.\""
+            },
+            4: {
+                op: 'multiplication_vertical',
+                title: "4. Durak Görevleri: Dikey Çarpma Yolculuğu",
+                desc: "Kız Kulesi'nin eşsiz manzarasında çarpma becerilerini geliştir. Alt alta yazarak çarpma işlemlerini çöz!",
+                modules: [
+                    { id: 1, name: "Modül 1", desc: "1 basamaklı x 1 basamaklı", msg: "Kız Kulesi'ne ilk adımını başarıyla attın! Temel çarpmada harikasın." },
+                    { id: 2, name: "Modül 2", desc: "2 basamaklı x 1 basamaklı", msg: "Çok güzel! Hızını artırarak dalgaların arasından ilerliyorsun." },
+                    { id: 3, name: "Modül 3", desc: "3 basamaklı x 1 basamaklı", msg: "Mükemmel! Artık daha büyük sayılarla da rahatça çalışabiliyorsun." },
+                    { id: 4, name: "Modül 4", desc: "2 basamaklı x 2 basamaklı", msg: "Süper! Çift basamaklı sayılar seni durduramıyor." },
+                    { id: 5, name: "Modül 5", desc: "3 basamaklı x 2 basamaklı", msg: "Bravo! Keşif yolculuğunun en zor sularını aşıyorsun." },
+                    { id: 6, name: "Modül 6", desc: "3 basamaklı x 3 basamaklı", msg: "İnanılmaz! Kız Kulesi'nin zirvesine ulaştın. Dikey çarpmada ustalaştın!" }
+                ],
+                fTitle: "Tebrikler! Dördüncü Durağı Tamamladın",
+                fSub: "Dikey Çarpma Yolculuğu başarıyla bitti.",
+                fDesc: "Kız Kulesi durağını başarıyla geçtin. Sayıları alt alta dizip en zor işlemleri bile kolayca çözdüğünü gösterdin.",
+                fMotto: "\"En zorlu işlemler bile doğru adımlarla çözülür.\""
+            },
+            5: {
+                op: 'division',
+                title: "5. Durak Görevleri: Bölme Yolculuğu",
+                desc: "Kuzguncuk'un tarihi sokaklarında bölme becerilerini geliştir. Kalan sayıları da bulmayı unutma!",
+                modules: [
+                    { id: 1, name: "Modül 1", desc: "1 basamaklı ÷ 1 basamaklı (Tam Bölünen)", msg: "Kuzguncuk'a merhaba! İlk bölme işlemlerini başarıyla tamamladın." },
+                    { id: 2, name: "Modül 2", desc: "2 basamaklı ÷ 1 basamaklı (Tam Bölünen)", msg: "Çok güzel! Hızlanarak devam ediyorsun." },
+                    { id: 3, name: "Modül 3", desc: "3 basamaklı ÷ 1 basamaklı (Tam Bölünen)", msg: "Mükemmel! Üç basamaklı sayılar bile seni zorlamıyor." },
+                    { id: 4, name: "Modül 4", desc: "3 basamaklı ÷ 2 basamaklı (Tam Bölünen)", msg: "Süper! İki basamaklı bölenlerde çok iyisin." },
+                    { id: 5, name: "Modül 5", desc: "Kalanlı Bölme Başlıyor (3 basamaklı)", msg: "Bravo! Kalanlı bölme dünyasına harika bir giriş yaptın." },
+                    { id: 6, name: "Modül 6", desc: "Büyük Kalanlı Bölme", msg: "İnanılmaz! Kuzguncuk'taki bölme yolculuğunda tamamen ustalaştın!" }
+                ],
+                fTitle: "Tebrikler! Beşinci Durağı Tamamladın",
+                fSub: "Bölme Yolculuğu başarıyla bitti.",
+                fDesc: "Kuzguncuk durağını başarıyla geçtin. Doğru paylaştırmanın ve hesaplamanın ustası olduğunu kanıtladın.",
+                fMotto: "\"Bölüşmek, matematiğin en güzel kurallarından biridir.\""
+            },
+            6: {
+                op: 'divisibility',
+                title: "6. Durak Görevleri: Bölünebilme Yolculuğu",
+                desc: "Bu durakta sayıların gizli kurallarını keşfedeceksin. Her modülü tamamladıkça bölünebilme kurallarında daha güçlü hale geleceksin.",
+                modules: [
+                    { id: 1, name: "Modül 1", desc: "2 ile bölünebilme", msg: "Harika başladın! Beylerbeyi Sarayı durağında ilk bölünebilme kuralını başarıyla keşfettin." },
+                    { id: 2, name: "Modül 2", desc: "5 ile bölünebilme", msg: "Çok iyi gidiyorsun! Sayıların son basamaklarına dikkat ederek güçlü adımlar atıyorsun." },
+                    { id: 3, name: "Modül 3", desc: "10 ile bölünebilme", msg: "Mükemmel! Artık hangi sayıların 10 ile dost olduğunu çok daha hızlı fark ediyorsun." },
+                    { id: 4, name: "Modül 4", desc: "4 ile bölünebilme", msg: "Süper! Şimdi sayıların son iki basamağına dikkat ederek daha derin bir keşfe çıktın." },
+                    { id: 5, name: "Modül 5", desc: "3 ile bölünebilme", msg: "Bravo! Rakamlar toplamının sırrını çözmeye başladın." },
+                    { id: 6, name: "Modül 6", desc: "9 ile bölünebilme", msg: "Harika ilerliyorsun! 9 ile bölünebilme kuralında da kendine güvenle devam ediyorsun." },
+                    { id: 7, name: "Modül 7", desc: "6 ile bölünebilme", msg: "İnanılmaz! Bu durağın tüm bölünebilme görevlerini tamamladın. Artık sayıların kurallarını çok daha iyi okuyabiliyorsun." }
+                ],
+                fTitle: "Tebrikler! 6. Durağı Tamamladın",
+                fSub: "Bölünebilme Yolculuğu başarıyla bitti.",
+                fDesc: "Bu durakta sayıların gizli kurallarını adım adım keşfettin. Dikkatini kullanarak tüm modülleri tamamladın ve bölünebilme kurallarında güçlü bir aşama kaydettin.",
+                fMotto: "\"Kuralları fark ettikçe sayılar daha anlamlı hale gelir.\""
+            },
+            7: {
+                op: 'zeros_power',
+                title: "7. Durak Görevleri: Sıfırların Gücü",
+                desc: "Bu durakta 10, 100 ve 1000 ile çarpma ve bölmenin mantığını keşfedeceksin. Her modülde sayıların nasıl hızla değiştiğini fark edeceksin.",
+                modules: [
+                    { id: 1, name: "Modül 1", desc: "10 ile çarpma", msg: "Harika başladın! Sayıları 10 ile çarparken işlemin ritmini yakaladın." },
+                    { id: 2, name: "Modül 2", desc: "100 ile çarpma", msg: "Çok iyi gidiyorsun! 100 ile çarpmada sıfırların nasıl güç kattığını fark etmeye başladın." },
+                    { id: 3, name: "Modül 3", desc: "1000 ile çarpma", msg: "Mükemmel! Artık 1000 ile çarpma işlemlerinde çok daha hızlı düşünüyorsun." },
+                    { id: 4, name: "Modül 4", desc: "10, 100 ve 1000'in katlarıyla çarpma", msg: "Süper! 10’un, 100’ün ve 1000’in katlarıyla çarpma konusunda güçlü bir adım attın." },
+                    { id: 5, name: "Modül 5", desc: "10 ile bölme", msg: "Bravo! 10 ile bölme işlemlerinde sıfırların nasıl eksildiğini dikkatle gördün." },
+                    { id: 6, name: "Modül 6", desc: "100 ile bölme", msg: "Harika ilerliyorsun! 100 ile bölmede işlem mantığını çok daha net kavradın." },
+                    { id: 7, name: "Modül 7", desc: "1000 ile bölme", msg: "İnanılmaz! Bu durağın tüm sıfırlarla işlem görevlerini başarıyla tamamladın." }
+                ],
+                fTitle: "Tebrikler! 7. Durağı Tamamladın",
+                fSub: "Sıfırların Gücü Yolculuğu başarıyla bitti.",
+                fDesc: "Bu durakta 10, 100 ve 1000 ile çarpma ve bölme işlemlerinde çok güçlü bir aşama kaydettin. Sayıların nasıl büyüyüp küçüldüğünü dikkatle keşfettin.",
+                fMotto: "\"Sayıların düzenini keşfettikçe işlemler çok daha kolay hale gelir.\""
+            },
+            8: {
+                op: 'rounding',
+                title: "8. Durak: Yuvarlama Yolculuğu",
+                desc: "Sayıları en yakın değerlere yaklaştırmayı öğreneceksin. Her adımda daha hızlı ve doğru karar vereceksin.",
+                modules: [
+                    { id: 1, name: "Modül 1", desc: "İki basamaklı sayıları en yakın onluğa yuvarlama", msg: "Harika! Birler basamağının gücünü keşfettin." },
+                    { id: 2, name: "Modül 2", desc: "Üç basamaklı sayıları en yakın onluğa yuvarlama", msg: "Çok iyi! Daha büyük sayılarda da doğru karar veriyorsun." },
+                    { id: 3, name: "Modül 3", desc: "İki ve üç basamaklı sayıları en yakın yüzlüğe yuvarlama", msg: "Süper! Yüzlüklere yaklaşmayı öğrendin." },
+                    { id: 4, name: "Modül 4", desc: "Üç ve dört basamaklı sayıları en yakın yüzlüğe yuvarlama", msg: "İnanılmaz! Yuvarlama konusunda çok güçlendin." }
+                ],
+                fTitle: "Tebrikler! 8. Durağı Tamamladın",
+                fSub: "Artık sayıları hızlı ve doğru şekilde yuvarlayabiliyorsun.",
+                fDesc: "Yuvarlama yolculuğunda 4 modülün tamamını büyük bir başarıyla bitirdin.",
+                fMotto: "\"Doğru kararlar seni her zaman ileri taşır.\""
+            },
+            9: {
+                op: 'addition_grid',
+                title: "9. Durak Görevleri: Toplama Tablosu",
+                desc: "Satır ve sütundaki sayıları topla, doğru kutucuğun sonucunu bul. Her doğru cevap seni yolculukta ileri taşıyacak.",
+                modules: [
+                    { id: 1, name: "Modül 1", desc: "Eldesiz Toplama Tablosu", msg: "Harika başladın! Eldesiz toplama tablosunda düzeni çok iyi yakaladın." },
+                    { id: 2, name: "Modül 2", desc: "Eldeli Toplama Tablosu", msg: "İnanılmaz! Eldeli toplama tablosunu da başarıyla tamamladın. Artık tablo üzerinde çok daha güçlü düşünebiliyorsun." }
+                ],
+                fTitle: "Tebrikler! 9. Durağı Tamamladın",
+                fSub: "Toplama Tablosu Görevleri başarıyla bitti.",
+                fDesc: "Bu durakta tablo üzerindeki işlemleri dikkatle çözdün, doğru sonuçları buldun ve iki modülü de tamamladın. Artık işlemler arasında daha hızlı bağlantı kurabiliyorsun.",
+                fMotto: "\"Her doğru bağlantı seni daha güçlü bir problem çözücü yapar.\""
+            },
+            10: {
+                op: 'multiplication_grid',
+                title: "10. Durak: Çarpma Tablosu Ustalığı",
+                desc: "4’ten 9’a kadar sayılarla çarpım tablosunu keşfet. Doğru sonuçları bularak ustalaş.",
+                modules: [
+                    { id: 1, name: "Modül 1", desc: "4 ve 5 ağırlıklı", msg: "Harika başlangıç! Temel çarpımları yakaladın." },
+                    { id: 2, name: "Modül 2", desc: "6 ve 7 ağırlıklı", msg: "Güçleniyorsun! Daha zor sayılar seni durduramıyor." },
+                    { id: 3, name: "Modül 3", desc: "8 ağırlıklı", msg: "Süper! 8 ile çarpma artık çok daha kolay." },
+                    { id: 4, name: "Modül 4", desc: "9 ağırlıklı (en zor)", msg: "Efsane! 9 ile çarpma görevini tamamladın." }
+                ],
+                fTitle: "Tebrikler! 10. Durağı Tamamladın",
+                fSub: "Çarpma Tablosu Görevleri başarıyla bitti.",
+                fDesc: "Çarpma tablosunun en güçlü seviyesine ulaştın. Artık sayılarla çok hızlı işlem yapabiliyorsun.",
+                fMotto: "\"Artık bu yolculukta gerçek bir matematik kaşifisin.\""
+            },
+            11: {
+                op: 'factor_tree',
+                title: "11. Durak: Çarpan Ağacı Keşfi",
+                desc: "Ağaçtaki bağlantıları çöz, en üstteki sayıyı bul.",
+                modules: [
+                    { id: 1, name: "Modül 1", desc: "Basit ağaç (2-3 seviyeli)", msg: "Harika! Temel bağlantıları çözdün." },
+                    { id: 2, name: "Modül 2", desc: "Orta seviye (3 seviyeli)", msg: "Giderek daha hızlı düşünüyorsun." },
+                    { id: 3, name: "Modül 3", desc: "Daha karmaşık dallanma", msg: "Çok iyi! Karmaşık yapıları çözebiliyorsun." },
+                    { id: 4, name: "Modül 4", desc: "Tam karışık yapı", msg: "Efsane! Bu seviyede gerçek bir matematik kaşifisin." }
+                ],
+                fTitle: "Tebrikler! 11. Durağı Tamamladın",
+                fSub: "Çarpan Ağacı Görevleri başarıyla bitti.",
+                fDesc: "Çarpan ağacı yapısını tamamen çözdün. Artık sayılar arasındaki ilişkileri çok güçlü kurabiliyorsun.",
+                fMotto: "\"Matematik artık senin için bir keşif alanı.\""
+            },
+            12: {
+                op: 'magic_square',
+                title: "12. Durak: Sayı Dengesi",
+                desc: "Tüm satır, sütun ve köşegenlerin toplamını eşitle. Eksik sayıyı bul.",
+                modules: [
+                    { id: 1, name: "Modül 1", desc: "Basit denge (Tek adım)", msg: "Harika! Dengeleri doğru kurdun." },
+                    { id: 2, name: "Modül 2", desc: "Gizli denge (Köşegen kullanımı)", msg: "Muazzam! Gelişmiş çapraz dengeyi çözdün." }
+                ],
+                fTitle: "Tebrikler! 12. Durağı Tamamladın",
+                fSub: "Sayı Dengesi Görevleri başarıyla bitti.",
+                fDesc: "Sayılar arasındaki gizli dengeyi keşfettin. Artık çok daha güçlü düşünüyorsun.",
+                fMotto: "\"Matematik bir denge sanatıdır.\""
+            }
+        };
+
+        const container = document.getElementById('timeline');
+
+        locations.forEach((loc, index) => {
+            const isOdd = index % 2 === 0;
+            const cardClass = isOdd ? 'timeline-node odd' : 'timeline-node even';
+
+            const node = document.createElement('div');
+            node.className = cardClass;
+            node.id = 'node-' + loc.id;
+
+            node.innerHTML = `
+                <div class="checkpoint-wrapper"><div class="checkpoint-dot"></div></div>
+                <div class="card">
+                    <div class="card-img-wrapper"><img src="${loc.src}" alt="${loc.title.replace(/^\d+\.\s*/, '')}" /></div>
+                    <h3>${loc.title}</h3>
+                    <p>${loc.short}</p>
+                    <div class="card-buttons">
+                        <button class="btn btn-passive" onclick="openPopup(${loc.id})">Bilgiyi Keşfet</button>
+                        <button class="btn btn-active" onclick="openMissionPanel(${loc.id})">Göreve Başla</button>
+                        ${[3, 4, 5].includes(loc.id) ? `<button class="btn btn-passive" style="background:#e3f2fd; color:var(--primary); font-weight:bold; border-color:var(--primary);" onclick="document.getElementById('ct-hint-overlay').style.display='flex'">Tabloya Bak 🔍</button>` : ''}
+                    </div>
+                </div>
+            `;
+            container.appendChild(node);
+        });
+
+        // --- DİNAMİK KIVRIMLI YOL ÇİZİMİ (SVG) ---
+        function drawPath() {
+            const nodes = document.querySelectorAll('.checkpoint-dot');
+            const svg = document.getElementById('path-svg');
+            const path = document.getElementById('path-line');
+            if (nodes.length === 0 || !svg || !path) return;
+
+            const svgRect = svg.getBoundingClientRect();
+            let d = "";
+
+            nodes.forEach((node, i) => {
+                const nodeRect = node.getBoundingClientRect();
+                const xAbs = nodeRect.left - svgRect.left + (nodeRect.width / 2);
+                const yAbs = nodeRect.top - svgRect.top + (nodeRect.height / 2);
+
+                if (i === 0) { d += `M ${xAbs} ${yAbs} `; }
+                else {
+                    const prevNode = nodes[i - 1];
+                    const prevRect = prevNode.getBoundingClientRect();
+                    const prevX = prevRect.left - svgRect.left + (prevRect.width / 2);
+                    const prevY = prevRect.top - svgRect.top + (prevRect.height / 2);
+
+                    const cp1x = prevX; const cp1y = prevY + (yAbs - prevY) / 2;
+                    const cp2x = xAbs; const cp2y = prevY + (yAbs - prevY) / 2;
+                    d += `C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${xAbs} ${yAbs} `;
+                }
+            });
+            path.setAttribute('d', d);
+        }
+
+        function checkScroll() {
+            const nodes = document.querySelectorAll('.timeline-node');
+            const triggerBottom = window.innerHeight * 0.85;
+            nodes.forEach(node => {
+                if (node.getBoundingClientRect().top < triggerBottom) node.classList.add('visible');
+            });
+        }
+        window.addEventListener('resize', () => { setTimeout(drawPath, 200); });
+        window.addEventListener('scroll', checkScroll);
+        window.addEventListener('load', () => { drawPath(); checkScroll(); });
+
+        const popupOverlay = document.getElementById('popup-overlay');
+        function openPopup(id) {
+            const loc = locations.find(l => l.id === id);
+            if (loc) {
+                document.getElementById('popup-title').innerText = loc.title.replace(/^\d+\.\s*/, '');
+                document.getElementById('popup-text').innerText = loc.detail;
+                popupOverlay.classList.add('show');
+            }
+        }
+        function closePopup(id) { document.getElementById(id).classList.remove('show'); }
+
+        // ==========================================
+        // GÖREV SİSTEMİ MANTIĞI
+        // ==========================================
+        let currentLocId = 1;
+        let cModId = 1;
+        let cQuestionNo = 1;
+        let mistakes = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let cAns = 0;
+        let lastQ = { a: 0, b: 0 };
+
+        let highestUnlockedLoc = {}; // lokasyon bazlı modül ilerlemesi
+        locations.forEach(l => highestUnlockedLoc[l.id] = 1);
+
+        function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+        function checkCarry(a, b) {
+            let sa = String(a).split('').reverse();
+            let sb = String(b).split('').reverse();
+            let carry = 0;
+            for (let i = 0; i < Math.max(sa.length, sb.length); i++) {
+                let sum = (Number(sa[i]) || 0) + (Number(sb[i]) || 0) + carry;
+                if (sum >= 10) return true;
+                carry = Math.floor(sum / 10); // Optional given the condition
+            }
+            return false;
+        }
+
+        function checkBorrow(a, b) {
+            let sa = String(a).split('').reverse();
+            let sb = String(b).split('').reverse();
+            for (let i = 0; i < sb.length; i++) {
+                if (Number(sa[i]) < Number(sb[i])) return true;
+            }
+            return false;
+        }
+
+        function generateMathQ(locId, modId) {
+            let op = locationTasks[locId].op;
+            let a, b, valid = false, attempts = 0;
+            while (!valid && attempts < 1500) {
+                attempts++;
+                if (op === 'addition') {
+                    if (modId === 1) { a = rand(10, 99); b = rand(10, 99); if (!checkCarry(a, b)) valid = true; }
+                    else if (modId === 2) { a = rand(100, 999); b = rand(10, 999); if (!checkCarry(a, b)) valid = true; }
+                    else if (modId === 3) { a = rand(1000, 9999); b = rand(10, 9999); if (!checkCarry(a, b)) valid = true; }
+                    else if (modId === 4) { a = rand(10, 99); b = rand(10, 99); if (checkCarry(a, b)) valid = true; }
+                    else if (modId === 5) { a = rand(100, 999); b = rand(10, 999); if (checkCarry(a, b)) valid = true; }
+                    else if (modId === 6) { a = rand(1000, 9999); b = rand(10, 9999); if (checkCarry(a, b)) valid = true; }
+                } else if (op === 'subtraction') {
+                    if (modId === 1) { a = rand(10, 99); b = rand(10, 99); if (a >= b && !checkBorrow(a, b)) valid = true; }
+                    else if (modId === 2) { a = rand(100, 999); b = rand(10, 999); if (a >= b && !checkBorrow(a, b)) valid = true; }
+                    else if (modId === 3) { a = rand(1000, 9999); b = rand(10, 9999); if (a >= b && !checkBorrow(a, b)) valid = true; }
+                    else if (modId === 4) { a = rand(10, 99); b = rand(10, 99); if (a >= b && checkBorrow(a, b)) valid = true; }
+                    else if (modId === 5) { a = rand(100, 999); b = rand(10, 999); if (a >= b && checkBorrow(a, b)) valid = true; }
+                    else if (modId === 6) { a = rand(1000, 9999); b = rand(10, 9999); if (a >= b && checkBorrow(a, b)) valid = true; }
+                } else if (op === 'multiplication') {
+                    if (modId === 1 || modId === 2 || modId === 5) {
+                        a = rand(1, 9); b = rand(1, 9); valid = true;
+                    } else if (modId === 3) {
+                        a = rand(4, 10); b = rand(4, 10); valid = true;
+                    } else if (modId === 4 || modId === 6) {
+                        a = rand(5, 10); b = rand(5, 10); valid = true;
+                    }
+                } else if (op === 'multiplication_vertical') {
+                    if (modId === 1) { a = rand(1, 9); b = rand(1, 9); valid = true; }
+                    else if (modId === 2) { a = rand(10, 99); b = rand(1, 9); valid = true; }
+                    else if (modId === 3) { a = rand(100, 999); b = rand(1, 9); valid = true; }
+                    else if (modId === 4) { a = rand(10, 99); b = rand(10, 99); valid = true; }
+                    else if (modId === 5) { a = rand(100, 999); b = rand(10, 99); valid = true; }
+                    else if (modId === 6) { a = rand(100, 999); b = rand(100, 999); valid = true; }
+                } else if (op === 'division') {
+                    if (modId === 1) { a = rand(1, 9); b = rand(1, 9); if (a >= b && a % b === 0) valid = true; }
+                    else if (modId === 2) { a = rand(10, 99); b = rand(2, 9); if (a % b === 0) valid = true; }
+                    else if (modId === 3) { a = rand(100, 999); b = rand(2, 9); if (a % b === 0) valid = true; }
+                    else if (modId === 4) { a = rand(100, 999); b = rand(10, 99); if (a >= b && a % b === 0) valid = true; }
+                    else if (modId === 5) { a = rand(100, 999); b = rand(2, 99); if (a >= b) valid = true; }
+                    else if (modId === 6) { a = rand(100, 9999); b = rand(2, 99); if (a >= b) valid = true; }
+                } else if (op === 'divisibility') {
+                    let rules = { 1: 2, 2: 5, 3: 10, 4: 4, 5: 3, 6: 9, 7: 6 };
+                    b = rules[modId];
+                    a = rand(10, 9999);
+                    if (Math.random() < 0.5) {
+                        a = a - (a % b);
+                        if (a === 0) a += b;
+                    } else {
+                        if (a % b === 0) a += 1;
+                    }
+                    valid = true;
+                } else if (op === 'zeros_power') {
+                    let addZeros = (num, minZ, maxZ) => parseInt(String(num) + '0'.repeat(rand(minZ, maxZ)));
+                    let pickBaseNum = () => rand(1, 3) === 1 ? rand(2, 9) : (rand(1, 2) === 1 ? rand(11, 99) : rand(101, 999));
+
+                    if (modId === 1) { a = addZeros(pickBaseNum(), 0, 2); b = 10; valid = true; }
+                    else if (modId === 2) { a = addZeros(pickBaseNum(), 0, 2); b = 100; valid = true; }
+                    else if (modId === 3) { a = addZeros(pickBaseNum(), 0, 2); b = 1000; valid = true; }
+                    else if (modId === 4) {
+                        b = parseInt(rand(2, 9) + '0'.repeat(rand(1, 3)));
+                        a = addZeros(pickBaseNum(), 0, 1);
+                        if (a * b > 500000) a = rand(2, 20);
+                        valid = true;
+                    }
+                    else if (modId === 5) { a = addZeros(pickBaseNum(), 1, 4); b = 10; valid = true; }
+                    else if (modId === 6) { a = addZeros(pickBaseNum(), 2, 4); b = 100; valid = true; }
+                    else if (modId === 7) { a = addZeros(pickBaseNum(), 3, 4); b = 1000; valid = true; }
+                } else if (op === 'rounding') {
+                    if (modId === 1) { // 2 basamaklı -> onluğa
+                        a = rand(10, 99);
+                        let lower = Math.floor(a / 10) * 10;
+                        let upper = lower + 10;
+                        b = { opt1: lower, opt2: upper, correct: (a % 10 >= 5 ? upper : lower) };
+                    } else if (modId === 2) { // 3 basamaklı -> onluğa
+                        a = rand(100, 999);
+                        let lower = Math.floor(a / 10) * 10;
+                        let upper = lower + 10;
+                        b = { opt1: lower, opt2: upper, correct: (a % 10 >= 5 ? upper : lower) };
+                    } else if (modId === 3) { // 2 ve 3 basamaklı -> yüzlüğe
+                        a = rand(50, 999);
+                        if (a < 100 && rand(0, 1) === 0) a = rand(100, 999);
+                        let lower = Math.floor(a / 100) * 100;
+                        let upper = lower + 100;
+                        b = { opt1: lower, opt2: upper, correct: (a % 100 >= 50 ? upper : lower) };
+                    } else if (modId === 4) { // 3 ve 4 basamaklı -> yüzlüğe
+                        a = rand(100, 9999);
+                        let lower = Math.floor(a / 100) * 100;
+                        let upper = lower + 100;
+                        b = { opt1: lower, opt2: upper, correct: (a % 100 >= 50 ? upper : lower) };
+                    }
+                    if (modId <= 2 && a % 10 === 0) valid = false;
+                    else if (modId >= 3 && a % 100 === 0) valid = false;
+                    else valid = true;
+                } else if (op === 'magic_square') {
+                    window.cSquare = generateMagicSquare(modId);
+                    a = 1; b = 1; valid = true; // bypass
+                } else if (op === 'factor_tree') {
+                    window.cTree = calculateFactorTree(modId);
+                    a = 1; b = 1; valid = true; // bypass
+                } else if (op === 'addition_grid' || op === 'multiplication_grid') {
+                    if (!window.cGrid) generateGrid(op, modId);
+
+                    let available = [];
+                    for (let r = 0; r < 3; r++) {
+                        for (let c = 0; c < 3; c++) {
+                            if (r === window.cGrid.lastR && c === window.cGrid.lastC) continue;
+                            available.push({ r, c });
+                        }
+                    }
+                    let unasked = available.filter(cell => !window.cGrid.asked.some(a => a.r === cell.r && a.c === cell.c));
+                    let pool = unasked.length > 0 ? unasked : available;
+
+                    let chosen = pool[rand(0, pool.length - 1)];
+                    window.cGrid.lastR = chosen.r;
+                    window.cGrid.lastC = chosen.c;
+                    window.cGrid.asked.push(chosen);
+
+                    a = window.cGrid.left[chosen.r];
+                    b = window.cGrid.top[chosen.c];
+                    valid = true;
+                }
+
+                if (valid && a === lastQ.a && b === lastQ.b) valid = false;
+            }
+            lastQ = { a, b };
+            let sign = op === 'addition' ? '+' : (op === 'subtraction' ? '-' : (op === 'division' ? '÷' : 'x'));
+            if (op === 'zeros_power') sign = (modId >= 5) ? '÷' : 'x';
+            if (op === 'rounding') sign = '→';
+
+            let ans;
+            if (op === 'division') ans = { q: Math.floor(a / b), r: a % b };
+            else if (op === 'divisibility') ans = (a % b === 0);
+            else if (op === 'rounding') ans = b.correct;
+            else if (op === 'zeros_power' && modId >= 5) ans = a / b;
+            else if (op === 'zeros_power') ans = a * b;
+            else if (op === 'magic_square') ans = window.cSquare.ans;
+            else if (op === 'factor_tree') ans = window.cTree.ans;
+            else ans = (op === 'addition' || op === 'addition_grid') ? a + b : (op === 'subtraction' ? a - b : a * b);
+
+            let exp = "";
+            if (op === 'divisibility') {
+                let strA = String(a);
+                let isDiv = (a % b === 0);
+                if (b === 2) {
+                    let last = strA[strA.length - 1];
+                    exp = isDiv ? `Son basamağı çift (${last}) olduğu için bölünür.` : `Son basamağı tek (${last}) olduğu için bölünmez.`;
+                } else if (b === 5) {
+                    let last = strA[strA.length - 1];
+                    exp = isDiv ? `Son basamağı ${last} olduğu için bölünür.` : `Son basamağı ${last} olduğu için bölünmez.`;
+                } else if (b === 10) {
+                    let last = strA[strA.length - 1];
+                    exp = isDiv ? `Son basamağı 0 olduğu için bölünür.` : `Son basamağı ${last} olduğu için bölünmez.`;
+                } else if (b === 4) {
+                    let lastTwo = strA.slice(-2) || strA;
+                    exp = isDiv ? `Son iki basamağı (${lastTwo}), 4'ün katı olduğu için bölünür.` : `Son iki basamağı (${lastTwo}), 4'ün katı olmadığı için bölünmez.`;
+                } else if (b === 3 || b === 9) {
+                    let sum = strA.split('').reduce((acc, val) => acc + parseInt(val), 0);
+                    exp = isDiv ? `Rakamları toplamı (${sum}), ${b}'un katı olduğu için bölünür.` : `Rakamları toplamı (${sum}), ${b}'un katı olmadığı için bölünmez.`;
+                } else if (b === 6) {
+                    let sum = strA.split('').reduce((acc, val) => acc + parseInt(val), 0);
+                    let isEven = parseInt(strA[strA.length - 1]) % 2 === 0;
+                    let is3 = sum % 3 === 0;
+                    if (isEven && is3) exp = "Sayı çift ve rakamları toplamı 3'ün katı olduğu için bölünür.";
+                    else if (!isEven && !is3) exp = "Sayı tek ve rakamları toplamı 3'ün katı olmadığı için bölünmez.";
+                    else if (!isEven) exp = "Sayı tek olduğu için 6'ya bölünemez (2'ye bölünmüyor).";
+                    else exp = "Sayı çift ancak rakamları toplamı 3'ün katı olmadığı için 6'ya bölünemez (3'e bölünmüyor).";
+                }
+            }
+
+            return { a, b, sign, ans, exp };
+        }
+
+        function openMissionPanel(locId) {
+            // Önceki aktif panelleri kapat
+            document.querySelectorAll('.timeline-node.mission-active').forEach(el => {
+                if (el.id !== 'node-' + locId) el.classList.remove('mission-active');
+            });
+
+            currentLocId = locId;
+            const node = document.getElementById('node-' + locId);
+
+            if (node.classList.contains('mission-active')) return;
+
+            let panel = document.getElementById('mission-container-' + locId);
+            if (!panel) {
+                panel = document.createElement('div');
+                panel.id = 'mission-container-' + locId;
+                panel.className = 'mission-panel-wrapper';
+
+                let contentHTML = "";
+                let titleName = locations.find(l => l.id === locId).title.replace(/^\d+\.\s*/, '');
+
+                if (!locationTasks[locId]) {
+                    // Yakında formatı
+                    contentHTML = `
+                        <div class="mission-box" style="padding: 50px 30px; text-align:center;">
+                            <h3 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--secondary); margin-bottom: 20px;">${titleName} Görevleri</h3>
+                            <p style="color: var(--text-light); font-size:1.15rem; line-height: 1.6;">Bu duraktaki matematik görevleri yakında eklenecek. Yolculuğuna devam ederken diğer durakları keşfedebilirsin.</p>
+                            <button class="btn btn-active" style="margin-top: 30px;" onclick="closeMissionPanel(${locId})">Görevleri Kapat</button>
+                        </div>
+                    `;
+                } else {
+                    contentHTML = `<div class="mission-box">
+                        <div id="view-list-${locId}" class="m-view"></div>
+                        <div id="view-game-${locId}" class="m-view" style="display:none;"></div>
+                        <div id="view-transition-${locId}" class="m-view" style="display:none;"></div>
+                    </div>`;
+                }
+
+                panel.innerHTML = contentHTML;
+                node.appendChild(panel);
+            }
+
+            node.classList.add('mission-active');
+            if (locationTasks[locId]) renderModuleList();
+            setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
+        }
+
+        function closeMissionPanel(locId) {
+            document.getElementById('node-' + locId).classList.remove('mission-active');
+        }
+
+        function renderModuleList() {
+            let locData = locationTasks[currentLocId];
+            let unlocked = highestUnlockedLoc[currentLocId];
+            let totalMods = locData.modules.length;
+
+            let dots = Array.from({ length: totalMods }, (_, i) => i + 1).map(i => {
+                let st = (i < unlocked) ? 'completed' : ((i === unlocked) ? 'active' : '');
+                return `<div class="route-dot ${st}">${i}</div>`;
+            }).join('');
+
+            let mods = locData.modules.map(m => {
+                let stClass = 'locked', stText = 'Kilitli', btn = `<button class="btn btn-passive" disabled>Kilitli</button>`;
+                if (unlocked > m.id) {
+                    stClass = 'completed'; stText = 'Tamamlandı';
+                    btn = `<button class="btn btn-passive" disabled>Bitti</button>`;
+                } else if (unlocked === m.id) {
+                    stClass = 'active'; stText = 'Aktif';
+                    btn = `<button class="btn btn-active" onclick="startModule(${m.id})">Başla</button>`;
+                }
+                return `<div class="mod-card ${stClass}">
+                    <div class="mod-info"><h4><span class="mod-status">${stText}</span> ${m.name}</h4><p>${m.desc}</p></div>
+                    <div>${btn}</div>
+                </div>`;
+            }).join('');
+
+            document.getElementById(`view-list-${currentLocId}`).innerHTML = `
+                <div class="mission-header">
+                    <h3>${locData.title}</h3>
+                    <p>${locData.desc}</p>
+                    <p style="margin-top:12px; font-weight:700; color:var(--primary); font-size: 1.05rem;">Yolculuğunda ${Math.min(unlocked - 1, totalMods)} / ${totalMods} modül tamamlandı.</p>
+                </div>
+                <div class="mini-route-progress">
+                    <div class="route-line"></div>
+                    ${dots}
+                </div>
+                <div class="modules-grid">${mods}</div>
+            `;
+            switchView('list');
+        }
+
+        function switchView(viewName) {
+            ['list', 'game', 'transition'].forEach(name => {
+                const el = document.getElementById(`view-${name}-${currentLocId}`);
+                if (el) el.style.display = (name === viewName) ? 'block' : 'none';
+            });
+        }
+
+        const treeLayouts = {
+            1: {
+                nodes: [
+                    { id: 'n0', x: 50, y: 15, isTarget: true },
+                    { id: 'n1', x: 30, y: 55 }, { id: 'n2', x: 70, y: 55 },
+                    { id: 'n3', x: 15, y: 88, isLeaf: true }, { id: 'n4', x: 45, y: 88, isLeaf: true }, { id: 'n5', x: 70, y: 88, isLeaf: true }
+                ],
+                links: [['n0', 'n1'], ['n0', 'n2'], ['n1', 'n3'], ['n1', 'n4'], ['n2', 'n5']]
+            },
+            2: {
+                nodes: [
+                    { id: 'n0', x: 50, y: 15, isTarget: true },
+                    { id: 'n1', x: 25, y: 55 }, { id: 'n2', x: 75, y: 55 },
+                    { id: 'n3', x: 10, y: 88, isLeaf: true }, { id: 'n4', x: 40, y: 88, isLeaf: true },
+                    { id: 'n5', x: 60, y: 88, isLeaf: true }, { id: 'n6', x: 90, y: 88, isLeaf: true }
+                ],
+                links: [['n0', 'n1'], ['n0', 'n2'], ['n1', 'n3'], ['n1', 'n4'], ['n2', 'n5'], ['n2', 'n6']]
+            },
+            3: {
+                nodes: [
+                    { id: 'n0', x: 50, y: 10, isTarget: true },
+                    { id: 'n1', x: 35, y: 38 }, { id: 'n2', x: 75, y: 38 },
+                    { id: 'n3', x: 20, y: 65 }, { id: 'n4', x: 50, y: 65 }, { id: 'n5', x: 75, y: 65 },
+                    { id: 'n7', x: 8, y: 88, isLeaf: true }, { id: 'n8', x: 32, y: 88, isLeaf: true },
+                    { id: 'n9', x: 50, y: 88, isLeaf: true }, { id: 'n10', x: 75, y: 88, isLeaf: true }
+                ],
+                links: [['n0', 'n1'], ['n0', 'n2'], ['n1', 'n3'], ['n1', 'n4'], ['n2', 'n5'], ['n3', 'n7'], ['n3', 'n8'], ['n4', 'n9'], ['n5', 'n10']]
+            },
+            4: {
+                nodes: [
+                    { id: 'n0', x: 50, y: 10, isTarget: true },
+                    { id: 'n1', x: 30, y: 38 }, { id: 'n2', x: 70, y: 38 },
+                    { id: 'n3', x: 15, y: 65 }, { id: 'n4', x: 45, y: 65 }, { id: 'n8', x: 60, y: 65 }, { id: 'n9', x: 85, y: 65 },
+                    { id: 'n5', x: 5, y: 88, isLeaf: true }, { id: 'n6', x: 25, y: 88, isLeaf: true }, { id: 'n7', x: 45, y: 88, isLeaf: true },
+                    { id: 'n10', x: 60, y: 88, isLeaf: true }, { id: 'n11', x: 85, y: 88, isLeaf: true }
+                ],
+                links: [['n0', 'n1'], ['n0', 'n2'], ['n1', 'n3'], ['n1', 'n4'], ['n2', 'n8'], ['n2', 'n9'],
+                ['n3', 'n5'], ['n3', 'n6'], ['n4', 'n7'], ['n8', 'n10'], ['n9', 'n11']]
+            }
+        };
+
+        function generateMagicSquare(modId) {
+            const bases = [
+                [8, 1, 6, 3, 5, 7, 4, 9, 2], [6, 1, 8, 7, 5, 3, 2, 9, 4],
+                [8, 3, 4, 1, 5, 9, 6, 7, 2], [4, 3, 8, 9, 5, 1, 2, 7, 6],
+                [6, 7, 2, 1, 5, 9, 8, 3, 4], [2, 7, 6, 9, 5, 1, 4, 3, 8],
+                [4, 9, 2, 3, 5, 7, 8, 1, 6], [2, 9, 4, 7, 5, 3, 6, 1, 8]
+            ];
+            let base = bases[rand(0, 7)];
+            let c = modId === 1 ? rand(1, 3) : rand(2, 4);
+            let d = modId === 1 ? rand(1, 10) : rand(5, 20);
+            let sq = base.map(v => v * c + d);
+
+            let hidden = [];
+            if (modId === 1) {
+                hidden.push(rand(0, 8));
+            } else {
+                let trans = [[1, 5, 6], [2, 3, 7], [0, 5, 7], [1, 3, 8]];
+                hidden = trans[rand(0, 3)];
+            }
+            let target = hidden[rand(0, hidden.length - 1)];
+            return { sq, hidden, target, ans: sq[target] };
+        }
+
+        function calculateFactorTree(modId) {
+            let layout = JSON.parse(JSON.stringify(treeLayouts[modId]));
+            layout.nodes.forEach(n => {
+                if (n.isLeaf) {
+                    const primes = [2, 3, 5, 7, 11, 13];
+                    let maxIdx = modId === 1 ? 5 : (modId === 2 ? 4 : (modId === 3 ? 3 : 2));
+                    n.val = primes[rand(0, maxIdx)];
+                }
+            });
+            let resolved = {};
+            layout.nodes.filter(n => n.isLeaf).forEach(n => resolved[n.id] = n.val);
+
+            while (Object.keys(resolved).length < layout.nodes.length) {
+                let initialCount = Object.keys(resolved).length;
+                layout.nodes.filter(n => !resolved[n.id]).forEach(n => {
+                    let children = layout.links.filter(l => l[0] === n.id).map(l => l[1]);
+                    let canResolve = children.every(c => resolved[c]);
+                    if (canResolve) {
+                        if (children.length === 1) n.val = resolved[children[0]];
+                        else if (children.length === 2) n.val = resolved[children[0]] * resolved[children[1]];
+                        resolved[n.id] = n.val;
+                    }
+                });
+                if (Object.keys(resolved).length === initialCount) break;
+            }
+            layout.ans = resolved['n0'];
+            return layout;
+        }
+
+        function generateAdditionGrid(modId) {
+            let top = [], left = [];
+            let op = locationTasks[currentLocId].op; // Assuming op is available here or passed
+            if (op === 'addition_grid') {
+                for (let i = 0; i < 3; i++) {
+                    if (modId === 1) {
+                        top.push((rand(1, 4) * 10) + rand(1, 4));
+                        left.push((rand(1, 4) * 10) + rand(1, 4));
+                    } else {
+                        top.push((rand(1, 8) * 10) + rand(5, 9));
+                        left.push((rand(2, 8) * 10) + rand(5, 9));
+                    }
+                }
+            } else if (op === 'multiplication_grid') {
+                if (modId === 1) { left = [4, 5, 6]; top = [7, 8, 9]; }
+                else if (modId === 2) { left = [6, 7, 8]; top = [5, 6, 7]; }
+                else if (modId === 3) { left = [4, 6, 8]; top = [7, 8, 9]; }
+                else if (modId === 4) { left = [5, 7, 9]; top = [8, 9, 6]; }
+            }
+            window.cGrid = { top, left, asked: [], lastR: -1, lastC: -1 };
+        }
+
+        function startModule(id) {
+            cModId = id; cQuestionNo = 1; mistakes = 0; correctCount = 0; wrongCount = 0;
+            if (locationTasks[currentLocId].op === 'addition_grid' || locationTasks[currentLocId].op === 'multiplication_grid') {
+                generateAdditionGrid(id);
+            }
+            switchView('game');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = generateMathQ(currentLocId, cModId);
+            cAns = q.ans;
+            let op = locationTasks[currentLocId].op;
+            const maxHearts = (op === 'addition_grid' || op === 'multiplication_grid' || op === 'factor_tree') ? 1 : 2;
+            const hearts = Math.max(0, maxHearts - mistakes);
+            const mName = locationTasks[currentLocId].modules.find(m => m.id === cModId).name;
+
+            let qHTML = `<div class="question-text" id="q-text-${currentLocId}">${q.a} ${q.sign} ${q.b} = ?</div>`;
+            let inputsHTML = `<input type="number" id="g-answer-${currentLocId}" class="game-input" placeholder="Cevap" onkeypress="if(event.key==='Enter') verifyAnswer()" autocomplete="off" />`;
+            let focusId = `g-answer-${currentLocId}`;
+            let verifyBtnHTML = `<button class="btn btn-active" style="width:100%; max-width:250px; font-size:1.1rem; margin-top:10px;" onclick="verifyAnswer()">Kontrol Et</button>`;
+
+            if (op === 'divisibility') {
+                qHTML = `<div class="question-text" id="q-text-${currentLocId}" style="letter-spacing: 4px; font-size:4.5rem; padding:30px 0; border:none; text-align:center;">${q.a}</div>`;
+                inputsHTML = `
+                    <div id="div-buttons-container-${currentLocId}" style="display:flex; flex-direction:column; gap:15px; margin-top:10px; width:100%; max-width:320px; margin-left:auto; margin-right:auto;">
+                        <button class="btn btn-passive div-btn-${currentLocId}" style="font-size:1.2rem; padding:18px; border:2px solid var(--primary); background:#fff; color:var(--primary); border-radius:12px; cursor:pointer;" onmouseover="this.style.background='var(--primary)'; this.style.color='#fff'" onmouseout="this.style.background='#fff'; this.style.color='var(--primary)'" onclick="verifyDivisibility(true, ${q.b})">${q.b} ile bölünür</button>
+                        <button class="btn btn-passive div-btn-${currentLocId}" style="font-size:1.2rem; padding:18px; border:2px solid var(--error); background:#fff; color:var(--error); border-radius:12px; cursor:pointer;" onmouseover="this.style.background='var(--error)'; this.style.color='#fff'" onmouseout="this.style.background='#fff'; this.style.color='var(--error)'" onclick="verifyDivisibility(false, ${q.b})">${q.b} ile bölünmez</button>
+                    </div>
+                `;
+                verifyBtnHTML = '';
+                focusId = null;
+                window._divExp = q.exp;
+            } else if (op === 'addition_grid' || op === 'multiplication_grid') {
+                qHTML = `
+                    <div style="font-size: 1.5rem; text-align: center; margin-bottom: 20px; font-weight: bold; color: var(--secondary);">
+                        Soru: Seçili kutunun sonucunu bul
+                    </div>
+                    <div style="display: grid; grid-template-columns: 80px 100px 100px 100px; gap: 10px; justify-content: center; margin-bottom: 30px;">
+                        <div style="background: var(--primary); color: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold;">${op === 'addition_grid' ? '+' : '&times;'}</div>
+                        ${window.cGrid.top.map(num => `<div style="background: #e3f2fd; color: var(--text-dark); border: 2px solid var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold; padding: 15px 0;">${num}</div>`).join('')}
+                        
+                        <!-- Row 0 -->
+                        <div style="background: #e3f2fd; color: var(--text-dark); border: 2px solid var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold;">${window.cGrid.left[0]}</div>
+                        ${[0, 1, 2].map(c => `<div id="grid-cell-0-${c}" style="background: ${window.cGrid.lastR === 0 && window.cGrid.lastC === c ? '#fff9c4' : '#fff'}; border: 3px solid ${window.cGrid.lastR === 0 && window.cGrid.lastC === c ? '#fbc02d' : '#e0e0e0'}; box-shadow: ${window.cGrid.lastR === 0 && window.cGrid.lastC === c ? '0 0 15px rgba(251,192,45,0.6)' : 'none'}; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: bold; color: var(--text-light); transition: all 0.3s; min-height: 70px;">?</div>`).join('')}
+                        
+                        <!-- Row 1 -->
+                        <div style="background: #e3f2fd; color: var(--text-dark); border: 2px solid var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold;">${window.cGrid.left[1]}</div>
+                        ${[0, 1, 2].map(c => `<div id="grid-cell-1-${c}" style="background: ${window.cGrid.lastR === 1 && window.cGrid.lastC === c ? '#fff9c4' : '#fff'}; border: 3px solid ${window.cGrid.lastR === 1 && window.cGrid.lastC === c ? '#fbc02d' : '#e0e0e0'}; box-shadow: ${window.cGrid.lastR === 1 && window.cGrid.lastC === c ? '0 0 15px rgba(251,192,45,0.6)' : 'none'}; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: bold; color: var(--text-light); transition: all 0.3s; min-height: 70px;">?</div>`).join('')}
+                        
+                        <!-- Row 2 -->
+                        <div style="background: #e3f2fd; color: var(--text-dark); border: 2px solid var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold;">${window.cGrid.left[2]}</div>
+                        ${[0, 1, 2].map(c => `<div id="grid-cell-2-${c}" style="background: ${window.cGrid.lastR === 2 && window.cGrid.lastC === c ? '#fff9c4' : '#fff'}; border: 3px solid ${window.cGrid.lastR === 2 && window.cGrid.lastC === c ? '#fbc02d' : '#e0e0e0'}; box-shadow: ${window.cGrid.lastR === 2 && window.cGrid.lastC === c ? '0 0 15px rgba(251,192,45,0.6)' : 'none'}; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: bold; color: var(--text-light); transition: all 0.3s; min-height: 70px;">?</div>`).join('')}
+                    </div>
+                `;
+            } else if (op === 'rounding') {
+                qHTML = `<div class="question-text" id="q-text-${currentLocId}" style="letter-spacing: 4px; font-size:4.5rem; padding:30px 0; border:none; text-align:center;">${q.a}</div>`;
+
+                let opts = [q.b.opt1, q.b.opt2];
+                if (Math.random() > 0.5) opts.reverse();
+
+                inputsHTML = `
+                    <div id="div-buttons-container-${currentLocId}" style="display:flex; flex-direction:row; justify-content:center; gap:20px; margin-top:10px; width:100%; max-width:400px; margin-left:auto; margin-right:auto;">
+                        <button class="btn btn-passive div-btn-${currentLocId}" style="flex:1; font-size:2rem; padding:20px 10px; border:3px solid var(--primary); background:#fff; color:var(--primary); border-radius:15px; cursor:pointer; font-weight:700;" onmouseover="this.style.background='var(--primary)'; this.style.color='#fff'" onmouseout="this.style.background='#fff'; this.style.color='var(--primary)'" onclick="verifyRounding(${opts[0]})">${opts[0]}</button>
+                        
+                        <button class="btn btn-passive div-btn-${currentLocId}" style="flex:1; font-size:2rem; padding:20px 10px; border:3px solid var(--primary); background:#fff; color:var(--primary); border-radius:15px; cursor:pointer; font-weight:700;" onmouseover="this.style.background='var(--primary)'; this.style.color='#fff'" onmouseout="this.style.background='#fff'; this.style.color='var(--primary)'" onclick="verifyRounding(${opts[1]})">${opts[1]}</button>
+                    </div>
+                `;
+                verifyBtnHTML = '';
+                focusId = null;
+            } else if (op === 'multiplication_vertical') {
+                qHTML = `
+                    <div class="question-text" id="q-text-${currentLocId}" style="padding: 20px 40px;">
+                        <div style="display:inline-block; text-align:right; font-family:'Courier New', Courier, monospace; font-size:3.5rem; letter-spacing:6px; line-height:1.2;">
+                            <div>${q.a}</div>
+                            <div style="border-bottom: 5px solid var(--text-dark); position:relative; padding-left:45px;">
+                                <span style="position:absolute; left:0; font-size:2rem; font-family:'Inter', sans-serif; top:50%; transform:translateY(-50%); letter-spacing:0; font-weight:500; color:var(--text-light);">&times;</span>${q.b}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (op === 'division') {
+                qHTML = `
+                    <div style="display: grid; grid-template-columns: minmax(100px, auto) minmax(130px, auto); justify-content: center; font-family: 'Inter', sans-serif; font-size: 2.2rem; color: var(--text-dark); margin: 10px 0 20px;">
+                        
+                        <div style="padding: 10px 20px 10px 10px; text-align: right; border-right: 3px solid var(--text-dark); font-weight: 500; letter-spacing: 2px;">
+                            ${q.a}
+                        </div>
+                        <div style="padding: 10px 10px 10px 20px; text-align: center; border-bottom: 3px solid var(--text-dark); font-weight: 500; letter-spacing: 1px;">
+                            ${q.b}
+                        </div>
+                        
+                        <div style="padding: 20px 20px 10px 10px; position: relative; border-right: 3px solid var(--text-dark); display: flex; align-items: flex-end; justify-content: flex-end;">
+                            <span style="position: absolute; left: 20px; bottom: 5px; font-size: 2rem; font-weight: 500;">-</span>
+                            <div style="width: 70%; border-bottom: 3px solid var(--text-dark); height: 2px;"></div>
+                        </div>
+                        <div style="padding: 20px 10px 10px 20px; text-align: center; display: flex; align-items: center; justify-content: center;">
+                            <input type="number" id="g-ans-q-${currentLocId}" class="game-input" style="width: 100%; max-width: 110px; text-align: center; font-size: 1.3rem; padding: 12px 10px; margin:0;" placeholder="Bölüm" onkeypress="if(event.key==='Enter') document.getElementById('g-ans-r-${currentLocId}').focus()" autocomplete="off" />
+                        </div>
+
+                        <div style="padding: 15px 20px 0 10px; text-align: right; display: flex; justify-content: flex-end;">
+                            <input type="number" id="g-ans-r-${currentLocId}" class="game-input" style="width: 100%; max-width: 110px; text-align: center; font-size: 1.3rem; padding: 12px 10px; margin:0;" placeholder="Kalan" onkeypress="if(event.key==='Enter') verifyAnswer()" autocomplete="off" />
+                        </div>
+                        <div></div>
+                        
+                    </div>
+                `;
+                inputsHTML = '';
+                focusId = `g-ans-q-${currentLocId}`;
+            } else if (op === 'magic_square') {
+                qHTML = `
+                    <div style="font-size: 1.5rem; text-align: center; margin-bottom: 20px; font-weight: bold; color: var(--secondary);">
+                        Boş olan daireye hangi sayı gelmelidir?
+                    </div>
+                    <div style="display:grid; grid-template-columns: repeat(3, 80px); gap: 15px; justify-content:center; margin-bottom:30px;">
+                `;
+                for (let i = 0; i < 9; i++) {
+                    if (window.cSquare.target === i) {
+                        qHTML += `<div id="ms-cell-${i}" style="width:80px; height:80px; border-radius:50%; border:3px solid var(--primary); display:flex; align-items:center; justify-content:center; background:#fff; box-shadow:0 0 15px rgba(24, 118, 208, 0.4); font-size:2.2rem; font-weight:bold; color:var(--primary); transition:all 0.3s;">?</div>`;
+                    } else if (window.cSquare.hidden.includes(i)) {
+                        qHTML += `<div style="width:80px; height:80px; border-radius:50%; border:3px solid rgba(24, 118, 208, 0.3); display:flex; align-items:center; justify-content:center; background:#f8fcff;"></div>`;
+                    } else {
+                        qHTML += `<div style="width:80px; height:80px; border-radius:50%; border:3px solid var(--primary); display:flex; align-items:center; justify-content:center; background:#e3f2fd; font-size:1.8rem; font-weight:bold; color:var(--text-dark);">${window.cSquare.sq[i]}</div>`;
+                    }
+                }
+                qHTML += `</div>`;
+                inputsHTML = `<input type="number" id="g-answer-${currentLocId}" class="game-input" placeholder="Sayı" onkeypress="if(event.key==='Enter') verifyAnswer()" autocomplete="off" />`;
+                verifyBtnHTML = `<button class="btn btn-active" style="width:100%; max-width:250px; font-size:1.1rem; margin-top:10px;" onclick="verifyAnswer()">Kontrol Et &rarr;</button>`;
+            } else if (op === 'factor_tree') {
+                qHTML = `
+                    <div style="font-size: 1.5rem; text-align: center; margin-bottom: 20px; font-weight: bold; color: var(--secondary);">
+                        A sayısı kaçtır?
+                    </div>
+                    <div style="position:relative; width:100%; height:280px; margin: 0 auto 30px; background:var(--card-bg); border-radius:12px; border:2px solid var(--primary);">
+                        <svg width="100%" height="100%" style="position:absolute; top:0; left:0; z-index:0;">`;
+
+                window.cTree.links.forEach(l => {
+                    let n1 = window.cTree.nodes.find(n => n.id === l[0]);
+                    let n2 = window.cTree.nodes.find(n => n.id === l[1]);
+                    qHTML += `<line x1="${n1.x}%" y1="${n1.y}%" x2="${n2.x}%" y2="${n2.y}%" stroke="var(--primary)" stroke-width="3" />`;
+                });
+
+                qHTML += `</svg>`;
+
+                window.cTree.nodes.forEach(n => {
+                    if (n.isTarget) {
+                        qHTML += `<div id="tree-node-${n.id}" style="position:absolute; left:${n.x}%; top:${n.y}%; transform:translate(-50%, -50%); width:60px; height:60px; background:#fff; border:3px solid var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:bold; color:var(--text-dark); z-index:1; box-shadow:0 0 15px rgba(242, 122, 24, 0.3);">A</div>`;
+                    } else if (n.isLeaf) {
+                        qHTML += `<div style="position:absolute; left:${n.x}%; top:${n.y}%; transform:translate(-50%, -50%); width:50px; height:50px; background:#e8f5e9; border:2px solid var(--success); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:bold; color:var(--success); z-index:1;">${n.val}</div>`;
+                    } else {
+                        qHTML += `<div style="position:absolute; left:${n.x}%; top:${n.y}%; transform:translate(-50%, -50%); width:40px; height:40px; background:#fff; border:2px solid var(--primary); border-radius:50%; z-index:1;"></div>`;
+                    }
+                });
+
+                qHTML += `</div>`;
+                inputsHTML = `<input type="number" id="g-answer-${currentLocId}" class="game-input" placeholder="A sayısı = ?" onkeypress="if(event.key==='Enter') verifyAnswer()" autocomplete="off"/>`;
+                verifyBtnHTML = `<button class="btn btn-active" style="width:100%; font-size:1.2rem; padding: 18px; margin-top:20px;" onclick="verifyAnswer()">Kontrol Et &rarr;</button>`;
+            }
+
+            let totalQ = op === 'factor_tree' ? 5 : ((op === 'addition_grid' || op === 'multiplication_grid' || op === 'magic_square') ? 10 : 20);
+            document.getElementById(`view-game-${currentLocId}`).innerHTML = `
+                <div class="game-view">
+                    <div class="game-top">
+                        <span>${mName} - Soru ${cQuestionNo} / ${totalQ}</span>
+                        <div class="game-lives">${'❤️'.repeat(hearts)}${'🤍'.repeat(2 - hearts)}</div>
+                    </div>
+                    <div class="game-stats-counters">
+                        <span class="stat-correct">Doğru: ${correctCount}</span>
+                        <span class="stat-wrong">Yanlış: ${wrongCount}</span>
+                    </div>
+                    ${qHTML}
+                    ${inputsHTML}
+                    ${verifyBtnHTML}
+                    <button class="btn btn-passive" style="width:100%; max-width:250px; font-size:0.9rem; margin-top:15px;" onclick="switchView('list')">Geri Dön</button>
+                </div>
+            `;
+            if (focusId) setTimeout(() => document.getElementById(focusId).focus(), 100);
+        }
+
+        function verifyDivisibility(choice, divisor) {
+            let isCorrect = (choice === cAns);
+            let color = isCorrect ? 'var(--success)' : 'var(--error)';
+            let title = isCorrect ? 'Doğru!' : 'Yanlış!';
+
+            if (isCorrect) correctCount++;
+            else { mistakes++; wrongCount++; }
+
+            document.getElementById('div-buttons-container-' + currentLocId).innerHTML = `
+                <div style="background: ${isCorrect ? '#e8f5e9' : '#ffebee'}; border: 2px solid ${color}; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px;">
+                    <span style="color: ${color}; font-size: 1.3rem; font-weight:bold; display:block; margin-bottom: 8px;">${title}</span>
+                    <span style="color: var(--text-dark); font-size: 1.05rem; font-weight: 500; display:block; line-height:1.4;">${window._divExp}</span>
+                </div>
+                <button class="btn btn-active" style="width:100%; font-size:1.1rem; padding: 15px;" onclick="nextDivisibilityQuestion()">Sonraki Soru &rarr;</button>
+            `;
+        }
+
+        function nextDivisibilityQuestion() {
+            cQuestionNo++;
+            if (mistakes >= 3) {
+                document.getElementById('fail-popup-overlay').classList.add('show');
+            } else if (cQuestionNo > 20) {
+                modSuccess();
+            } else {
+                loadQuestion();
+            }
+        }
+
+        function verifyRounding(choice) {
+            let isCorrect = (choice === cAns);
+            let color = isCorrect ? 'var(--success)' : 'var(--error)';
+            let title = isCorrect ? 'Doğru!' : 'Yanlış!';
+
+            let correctMsgs = ["Harika!", "Doğru yuvarladın!", "Süper karar!"];
+            let wrongMsgs = ["Birler basamağına dikkat et!", "Onlar basamağını tekrar incele.", "Yaklaştın!"];
+            let msg = isCorrect ? correctMsgs[rand(0, 2)] : wrongMsgs[rand(0, 2)];
+
+            if (isCorrect) correctCount++;
+            else { mistakes++; wrongCount++; }
+
+            document.getElementById('div-buttons-container-' + currentLocId).innerHTML = `
+                <div style="background: ${isCorrect ? '#e8f5e9' : '#ffebee'}; border: 2px solid ${color}; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px; width:100%;">
+                    <span style="color: ${color}; font-size: 1.3rem; font-weight:bold; display:block; margin-bottom: 8px;">${title}</span>
+                    <span style="color: var(--text-dark); font-size: 1.1rem; font-weight: 500; display:block; line-height:1.4;">${msg}</span>
+                </div>
+                <button class="btn btn-active" style="width:100%; font-size:1.1rem; padding: 15px;" onclick="nextRoundingQuestion()">Sonraki Soru &rarr;</button>
+            `;
+        }
+
+        function nextRoundingQuestion() {
+            cQuestionNo++;
+            if (mistakes >= 3) {
+                let failP = document.getElementById('fail-popup-text');
+                failP.innerText = "Biraz daha dikkat! Yuvarlama kuralını tekrar düşün.";
+                document.getElementById('fail-popup-overlay').classList.add('show');
+            } else if (cQuestionNo > 20) {
+                modSuccess();
+            } else {
+                loadQuestion();
+            }
+        }
+
+        function verifyAnswer() {
+            let op = locationTasks[currentLocId].op;
+            let isCorrect = false;
+            let inputsToShake = [];
+
+            if (op === 'division') {
+                let inpQ = document.getElementById(`g-ans-q-${currentLocId}`);
+                let inpR = document.getElementById(`g-ans-r-${currentLocId}`);
+                // Empty check
+                if (inpQ.value === '' || inpR.value === '') return;
+
+                let userQ = parseInt(inpQ.value);
+                let userR = parseInt(inpR.value);
+
+                if (userQ === cAns.q && userR === cAns.r) {
+                    isCorrect = true;
+                    inpQ.style.borderColor = 'var(--success)';
+                    inpR.style.borderColor = 'var(--success)';
+                } else {
+                    inputsToShake.push(inpQ, inpR);
+                }
+            } else {
+                let inp = document.getElementById(`g-answer-${currentLocId}`);
+                if (!inp.value) return;
+
+                let isAnsCorrect = parseInt(inp.value) === cAns;
+                if (isAnsCorrect) {
+                    isCorrect = true;
+                    inp.style.borderColor = 'var(--success)';
+                } else {
+                    inputsToShake.push(inp);
+                }
+            }
+
+            if (op === 'magic_square') {
+                let cellEl = document.getElementById(`ms-cell-${window.cSquare.target}`);
+                cellEl.style.background = isCorrect ? '#e8f5e9' : '#ffebee';
+                cellEl.style.borderColor = isCorrect ? 'var(--success)' : 'var(--error)';
+                cellEl.style.color = isCorrect ? 'var(--success)' : 'var(--error)';
+                if (isCorrect) cellEl.innerText = cAns;
+            } else if (op === 'factor_tree') {
+                let cellEl = document.getElementById('tree-node-n0');
+                cellEl.style.background = isCorrect ? '#e8f5e9' : '#ffebee';
+                cellEl.style.borderColor = isCorrect ? 'var(--success)' : 'var(--error)';
+                cellEl.style.color = isCorrect ? 'var(--success)' : 'var(--error)';
+                if (isCorrect) cellEl.innerText = cAns;
+            } else if ((op === 'addition_grid' || op === 'multiplication_grid') && window.cGrid) {
+                let cellId = `grid-cell-${window.cGrid.lastR}-${window.cGrid.lastC}`;
+                let cellEl = document.getElementById(cellId);
+                cellEl.style.background = isCorrect ? '#e8f5e9' : '#ffebee';
+                cellEl.style.borderColor = isCorrect ? 'var(--success)' : 'var(--error)';
+                cellEl.style.color = isCorrect ? 'var(--success)' : 'var(--error)';
+                if (isCorrect) cellEl.innerText = cAns;
+            }
+
+            if (isCorrect) {
+                correctCount++;
+            } else {
+                mistakes++;
+                wrongCount++;
+                inputsToShake.forEach(inp => inp.classList.add('error-shake'));
+            }
+
+            cQuestionNo++;
+
+            let maxQ = op === 'factor_tree' ? 5 : ((op === 'addition_grid' || op === 'multiplication_grid' || op === 'magic_square') ? 10 : 20);
+            let maxMistakes = (op === 'addition_grid' || op === 'multiplication_grid' || op === 'factor_tree') ? 2 : 3;
+
+            if (mistakes >= maxMistakes) {
+                let failP = document.getElementById('fail-popup-text');
+                if (op === 'addition_grid') failP.innerText = "Biraz daha dikkat ederek tekrar deneyelim. Bu tabloyu tamamladığında bir sonraki aşamaya geçeceksin.";
+                else if (op === 'multiplication_grid') failP.innerText = "Bu tabloyu çözmek için biraz daha dikkat gerekiyor. Hadi tekrar deneyelim.";
+                else if (op === 'magic_square') failP.innerText = "Tekrar Deneme Zamanı! Bu dengeyi kurmak için biraz daha dikkat!";
+                else if (op === 'factor_tree') failP.innerText = "Bu ağacı çözmek için bağlantıları dikkatle incele.";
+                else if (op === 'zeros_power') failP.innerText = "Sıfırların yerini dikkatle takip et. Bir kez daha denediğinde çok daha iyi yapacaksın.";
+                else failP.innerText = "Biraz daha dikkatle yeniden deneyelim. Bu modülü tamamladığında yolculuğun daha güçlü devam edecek.";
+                setTimeout(() => { document.getElementById('fail-popup-overlay').classList.add('show'); }, 300);
+                return;
+            }
+
+            if (cQuestionNo > maxQ) {
+                setTimeout(() => { modSuccess(); }, 300);
+            } else {
+                setTimeout(() => { loadQuestion(); }, (op === 'addition_grid' || op === 'multiplication_grid' || op === 'factor_tree' || op === 'magic_square') ? 800 : 400);
+            }
+        }
+
+        function restartCurrentModule() {
+            closePopup('fail-popup-overlay');
+            startModule(cModId);
+        }
+
+        function modSuccess() {
+            if (highestUnlockedLoc[currentLocId] === cModId) highestUnlockedLoc[currentLocId]++;
+
+            const locTask = locationTasks[currentLocId];
+            const totalMods = locTask.modules.length;
+
+            if (cModId === totalMods) {
+                switchView('list');
+                renderModuleList();
+
+                document.getElementById('final-popup-title').innerText = locTask.fTitle;
+                document.getElementById('final-popup-sub').innerText = locTask.fSub;
+                document.getElementById('final-popup-desc').innerText = locTask.fDesc;
+                document.getElementById('final-popup-motto').innerText = locTask.fMotto;
+
+                let qsPerMod = locTask.op === 'factor_tree' ? 5 : ((locTask.op === 'addition_grid' || locTask.op === 'multiplication_grid' || locTask.op === 'magic_square') ? 10 : 20);
+
+                document.getElementById('final-stats-mods').innerText = `${totalMods} / ${totalMods}`;
+                document.getElementById('final-stats-qs').innerText = `${totalMods * qsPerMod}`;
+
+                document.getElementById('final-popup-overlay').classList.add('show');
+            } else {
+                const msg = locTask.modules.find(m => m.id === cModId).msg;
+                let evalText = "Vazgeçmeden devam etmen çok değerli. Her adım seni geliştiriyor.";
+                if (correctCount >= 20) evalText = "Mükemmel bir performans!";
+                else if (correctCount >= 17) evalText = "Çok başarılı bir çalışma!";
+                else if (correctCount >= 14) evalText = "Güzel ilerliyorsun, biraz daha dikkatle çok daha iyisini yapabilirsin.";
+
+                if (locationTasks[currentLocId].op === 'rounding') {
+                    if (correctCount >= 20) evalText = "Mükemmel! Yuvarlama ustası oldun.";
+                    else if (correctCount >= 17) evalText = "Çok iyi gidiyorsun!";
+                    else if (correctCount >= 14) evalText = "Güzel ilerliyorsun, biraz daha dikkat!";
+                    else evalText = "Her deneme seni geliştirir!";
+                } else if (locationTasks[currentLocId].op === 'addition_grid' || locationTasks[currentLocId].op === 'multiplication_grid') {
+                    if (correctCount === 10) evalText = locationTasks[currentLocId].op === 'addition_grid' ? "Mükemmel! Tabloyu kusursuz tamamladın." : "Mükemmel! Çarpım tablosunda ustalaşıyorsun!";
+                    else if (correctCount >= 8) evalText = locationTasks[currentLocId].op === 'addition_grid' ? "Çok iyi! Küçük dikkatlerle daha da güçleneceksin." : "Çok iyi! Birkaç tekrar ile kusursuz olacaksın.";
+                    else evalText = locationTasks[currentLocId].op === 'addition_grid' ? "Güzel ilerliyorsun. Her denemede daha iyi oluyorsun." : "Gelişiyorsun! Her deneme seni güçlendirir.";
+                } else if (locationTasks[currentLocId].op === 'factor_tree') {
+                    if (correctCount === 5) evalText = "Mükemmel! Ağaçları ustalıkla çözdün!";
+                    else if (correctCount === 4) evalText = "Çok iyi! Bir adım daha ileri gidebilirsin.";
+                    else evalText = "Gelişiyorsun! Her deneme seni güçlendirir.";
+                } else if (locationTasks[currentLocId].op === 'magic_square') {
+                    if (correctCount === 10) evalText = "Mükemmel! Sayı dengesi ustasısın!";
+                    else if (correctCount >= 8) evalText = "Çok iyi! Biraz daha dikkatle kusursuz olacaksın.";
+                    else evalText = "Gelişiyorsun! Her deneme seni güçlendirir.";
+                }
+
+                document.getElementById(`view-transition-${currentLocId}`).innerHTML = `
+                    <div class="result-view">
+                        <h3>Modül ${cModId} Tamamlandı!</h3>
+                        <div style="display:flex; justify-content:center; gap:40px; margin-bottom: 25px; width:100%;">
+                            <div><span style="font-size:2rem; color:var(--success); font-weight:700;">${correctCount}</span><br><span style="color:#666; font-weight:600;">Doğru</span></div>
+                            <div><span style="font-size:2rem; color:var(--error); font-weight:700;">${wrongCount}</span><br><span style="color:#666; font-weight:600;">Yanlış</span></div>
+                        </div>
+                        <p style="font-weight:600; color:var(--text-dark); margin-bottom:15px;">${evalText}</p>
+                        <p style="font-style:italic;">"${msg}"</p>
+                        <button class="btn btn-active" style="width:100%; max-width:250px; margin-top:20px;" onclick="renderModuleList()">Sonraki Modüle Geç</button>
+                    </div>
+                `;
+                switchView('transition');
+            }
+        }
+
+        function saveSnapshot() {
+            const el = document.getElementById('final-popup-content');
+            html2canvas(el, { backgroundColor: '#FFFFFF', scale: 2 }).then(canvas => {
+                let link = document.createElement('a');
+                link.download = `uskudar-basari-durak-${currentLocId}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+    </script>
+
+    <!-- ARKAPLAN FİLİGRAN / WATERMARK -->
+    <div id="global-watermark"></div>
+    <style>
+        #global-watermark {
+            position: fixed;
+            top: -20vh;
+            left: -20vw;
+            width: 140vw;
+            height: 140vh;
+            pointer-events: none;
+            z-index: -1;
+            /* Kutucukların ve çizginin altında kalması için */
+            opacity: 0.015;
+            /* Daha az belirgin */
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: center;
+            gap: 120px 200px;
+            /* Daha az sayıda gözükmesi için aralıklar açıldı */
+            transform: rotate(-15deg);
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .wm-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.6rem;
+            font-weight: 800;
+            white-space: nowrap;
+            color: #000;
+            font-family: 'Inter', 'Playfair Display', sans-serif;
+        }
+
+        .wm-item img {
+            height: 35px;
+            opacity: 0.8;
+            object-fit: contain;
+        }
+    </style>
+    <script>
+        const wmContainer = document.getElementById('global-watermark');
+        let wmContent = '';
+        /* Kopya sayısı azaltıldı, 50 adet yeterli olacaktır geniş aralıklarla */
+        for (let i = 0; i < 50; i++) {
+            /* onerror döngüsünü kırmak için this.onerror=null eklendi, böylece sayfa yüklemesini (load eventi dolayısıyla yolu çizen kodu) dondurmaz */
+            wmContent += `<div class="wm-item"><img src="studyprove.png" onerror="this.onerror=null; this.src='logo.png';" /><span style="letter-spacing:1px;">HÜSEYİN FATİH ULUER</span></div>`;
+        }
+        wmContainer.innerHTML = wmContent;
+
+        /* Olası load gecikmelerinde yol çizgisi kaybolmasın diye dom hazır olduğunda manuel tetikleyelim */
+        document.addEventListener("DOMContentLoaded", () => {
+            if (typeof drawPath === 'function') setTimeout(drawPath, 300);
+        });
+    </script>
+</body>
+
+</html>
